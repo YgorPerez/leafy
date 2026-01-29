@@ -1,0 +1,71 @@
+"use client";
+
+import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { api } from "~/trpc/react";
+
+export function LoggedFoods({ date }: { date: Date }) {
+  const formattedDate = format(date, "yyyy-MM-dd");
+  const utils = api.useUtils();
+
+  const { data: logs, isLoading } = api.food.getDailyLogs.useQuery({
+    date: formattedDate,
+  });
+
+  // We need a delete mutation. I'll add it to foodRouter in the next step.
+  const deleteLogMutation = api.food.deleteLog.useMutation({
+    onSuccess: () => {
+      toast.success("Entry deleted");
+      void utils.food.getDailyLogs.invalidate();
+      void utils.food.getDailyNutrition.invalidate();
+    },
+  });
+
+  if (isLoading) return <div>Loading diary...</div>;
+  if (!logs || logs.length === 0) return null;
+
+  return (
+    <Card className="w-full max-w-4xl border-primary/20 bg-primary/5">
+      <CardHeader>
+        <CardTitle className="text-xl text-primary">Today's Diary</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {logs.map((log) => (
+            <div
+              key={log.id}
+              className="flex items-center justify-between rounded-lg bg-background/50 p-3 shadow-sm border border-white/5"
+            >
+              <div>
+                <div className="font-semibold">{log.foodName}</div>
+                <div className="text-xs text-muted-foreground">
+                  {log.quantity} {log.unit} • {log.foodBrand || "Generic"}
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right text-sm">
+                  {log.nutrients && (log.nutrients as any).energy_kcal && (
+                    <span className="font-bold">
+                      {(log.nutrients as any).energy_kcal} kcal
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-destructive opacity-50 hover:opacity-100"
+                  onClick={() => deleteLogMutation.mutate({ id: log.id })}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

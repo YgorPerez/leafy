@@ -11,6 +11,7 @@ test_results.json
 # database
 db.sqlite
 db.sqlite-journal
+drizzle/meta/
 
 # next.js
 /.next/

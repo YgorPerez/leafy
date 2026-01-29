@@ -1,13 +1,20 @@
 {
-	"version": "7",
-	"dialect": "sqlite",
-	"entries": [
-		{
-			"idx": 0,
-			"version": "6",
-			"when": 1769318613830,
-			"tag": "0000_good_shatterstar",
-			"breakpoints": true
-		}
-	]
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769318613830,
+      "tag": "0000_good_shatterstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1769318613830,
+      "tag": "0000_good_shatterstar",
+      "breakpoints": true
+    }
+  ]
 }

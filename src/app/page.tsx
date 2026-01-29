@@ -1,113 +1,95 @@
+import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
-
-import { FoodSearch } from "~/app/_components/food-search";
-import { LatestPost } from "~/app/_components/post";
+import { AuthForm } from "~/app/_components/auth-form";
+import { Dashboard } from "~/app/_components/dashboard";
+import { Button } from "~/components/ui/button";
+import { calculateDRI, type UserProfile } from "~/lib/clinical-calculator";
 import { auth } from "~/server/better-auth";
 import { getSession } from "~/server/better-auth/server";
-import { api, HydrateClient } from "~/trpc/server";
+import { db } from "~/server/db";
+import { user } from "~/server/db/schema";
+import { HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-	const hello = await api.post.hello({ text: "from tRPC" });
-	const session = await getSession();
+  const session = await getSession();
+  let metrics = null;
+  let dbUser = null;
 
-	if (session) {
-		void api.post.getLatest.prefetch();
-	}
+  if (session?.user) {
+    dbUser = await db.query.user.findFirst({
+      where: eq(user.id, session.user.id),
+    });
 
-	return (
-		<HydrateClient>
-			<main className="flex min-h-screen flex-col items-center justify-start bg-[#0a0a0a] text-white">
-				<div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-					<div className="flex flex-col items-center gap-4 text-center">
-						<h1 className="bg-gradient-to-r from-white via-white to-white/40 bg-clip-text font-extrabold text-6xl text-transparent tracking-tight sm:text-[6rem]">
-							Search <span className="text-[hsl(280,100%,70%)]">Foods</span>
-						</h1>
-						<p className="max-w-lg text-white/60 text-xl">
-							Explore nutritional data from millions of food products instantly
-							using DuckDB and Parquet.
-						</p>
-					</div>
+    if (
+      dbUser?.sex &&
+      dbUser?.weight &&
+      dbUser?.height &&
+      dbUser?.birthDate &&
+      dbUser?.activityLevel
+    ) {
+      const age = new Date().getFullYear() - dbUser.birthDate.getFullYear();
+      const profile: UserProfile = {
+        sex: dbUser.sex as "male" | "female",
+        age,
+        weight: dbUser.weight,
+        height: dbUser.height,
+        activityLevel: dbUser.activityLevel as any,
+      };
+      metrics = calculateDRI(profile);
+    }
+  }
 
-					<FoodSearch />
+  return (
+    <HydrateClient>
+      <main className="flex min-h-screen flex-col items-center justify-start bg-background text-foreground">
+        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <h1 className="font-extrabold text-6xl tracking-tight sm:text-[6rem]">
+              Leafy <span className="text-primary">Log</span>
+            </h1>
+            <p className="max-w-lg text-muted-foreground text-xl">
+              Track your nutrition with precision.
+            </p>
+          </div>
 
-					<div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-						<Link
-							className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-							href="https://create.t3.gg/en/usage/first-steps"
-							target="_blank"
-						>
-							<h3 className="font-bold text-2xl">First Steps →</h3>
-							<div className="text-lg">
-								Just the basics - Everything you need to know to set up your
-								database and authentication.
-							</div>
-						</Link>
-						<Link
-							className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-							href="https://create.t3.gg/en/introduction"
-							target="_blank"
-						>
-							<h3 className="font-bold text-2xl">Documentation →</h3>
-							<div className="text-lg">
-								Learn more about Create T3 App, the libraries it uses, and how
-								to deploy it.
-							</div>
-						</Link>
-					</div>
-					<div className="flex flex-col items-center gap-2">
-						<p className="text-2xl text-white">
-							{hello ? hello.greeting : "Loading tRPC query..."}
-						</p>
+          <Dashboard
+            metrics={metrics}
+            customGoals={dbUser?.goals ?? undefined}
+            session={session}
+          />
 
-						<div className="flex flex-col items-center justify-center gap-4">
-							<p className="text-center text-2xl text-white">
-								{session && <span>Logged in as {session.user?.name}</span>}
-							</p>
-							{!session ? (
-								<form>
-									<button
-										className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-										formAction={async () => {
-											"use server";
-											const res = await auth.api.signInSocial({
-												body: {
-													provider: "github",
-													callbackURL: "/",
-												},
-											});
-											if (!res.url) {
-												throw new Error("No URL returned from signInSocial");
-											}
-											redirect(res.url);
-										}}
-									>
-										Sign in with Github
-									</button>
-								</form>
-							) : (
-								<form>
-									<button
-										className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-										formAction={async () => {
-											"use server";
-											await auth.api.signOut({
-												headers: await headers(),
-											});
-											redirect("/");
-										}}
-									>
-										Sign out
-									</button>
-								</form>
-							)}
-						</div>
-					</div>
-
-					{session?.user && <LatestPost />}
-				</div>
-			</main>
-		</HydrateClient>
-	);
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <p className="text-center text-2xl">
+                {session && <span>Logged in as {session.user?.name}</span>}
+              </p>
+              {!session ? (
+                <div className="w-full max-w-md">
+                  <AuthForm />
+                </div>
+              ) : (
+                <form>
+                  <Button
+                    className="rounded-full px-10 py-6 font-semibold text-lg"
+                    formAction={async () => {
+                      "use server";
+                      await auth.api.signOut({
+                        headers: await headers(),
+                      });
+                      redirect("/");
+                    }}
+                    size="lg"
+                    variant="outline"
+                  >
+                    Sign out
+                  </Button>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+    </HydrateClient>
+  );
 }

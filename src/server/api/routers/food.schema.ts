@@ -81,6 +81,10 @@ export const FoodSearchSchema = z.object({
 	categories: z.string().nullable(),
 	nutriscore_grade: z.string().nullable(),
 	scans_n: z.coerce.number().nullable(),
+	source: z
+		.enum(["NCCDB", "USDA", "Branded", "User"])
+		.optional()
+		.default("Branded"),
 });
 
 export const FoodSearchOutputSchema = z.array(FoodSearchSchema);

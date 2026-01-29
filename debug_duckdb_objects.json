@@ -1,0 +1,285 @@
+[
+  {
+    "code": "0000790400028",
+    "product_name": {
+      "items": [
+        {
+          "entries": {
+            "lang": "main",
+            "text": "Welch's, freeze-dried banana & strawberry slices"
+          }
+        },
+        {
+          "entries": {
+            "lang": "en",
+            "text": "Welch's, freeze-dried banana & strawberry slices"
+          }
+        }
+      ]
+    },
+    "nutriments": {
+      "items": [
+        {
+          "entries": {
+            "name": "vitamin-c",
+            "value": 107.0999984741211,
+            "100g": 0.1071000024676323,
+            "serving": 0.029999999329447746,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "vitamin-a",
+            "value": 357,
+            "100g": 0.00010710000060498714,
+            "serving": 0.000029999999242136255,
+            "unit": "IU",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "sugars",
+            "value": 64.29000091552734,
+            "100g": 64.29000091552734,
+            "serving": 18,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "fat",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "saturated-fat",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "proteins",
+            "value": 3.569999933242798,
+            "100g": 3.569999933242798,
+            "serving": 1,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "sodium",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "energy",
+            "value": 321,
+            "100g": 1343,
+            "serving": 376,
+            "unit": "kcal",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "nova-group",
+            "value": null,
+            "100g": 1,
+            "serving": 1,
+            "unit": null,
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "fiber",
+            "value": 14.300000190734863,
+            "100g": 14.300000190734863,
+            "serving": 4,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "calcium",
+            "value": 71,
+            "100g": 0.07100000232458115,
+            "serving": 0.019899999722838402,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "fruits-vegetables-nuts-estimate-from-ingredients",
+            "value": null,
+            "100g": 100,
+            "serving": 100,
+            "unit": null,
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "salt",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "trans-fat",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "iron",
+            "value": 2.569999933242798,
+            "100g": 0.002570000011473894,
+            "serving": 0.0007200000109151006,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "energy-kcal",
+            "value": 321,
+            "100g": 321,
+            "serving": 89.9000015258789,
+            "unit": "kcal",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "cholesterol",
+            "value": 0,
+            "100g": 0,
+            "serving": 0,
+            "unit": "mg",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "carbohydrates",
+            "value": 85.70999908447266,
+            "100g": 85.70999908447266,
+            "serving": 24,
+            "unit": "g",
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "nutrition-score-fr",
+            "value": null,
+            "100g": 9,
+            "serving": null,
+            "unit": null,
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        },
+        {
+          "entries": {
+            "name": "fruits-vegetables-legumes-estimate-from-ingredients",
+            "value": null,
+            "100g": 100,
+            "serving": 100,
+            "unit": null,
+            "prepared_value": null,
+            "prepared_100g": null,
+            "prepared_serving": null,
+            "prepared_unit": null
+          }
+        }
+      ]
+    }
+  }
+]
