@@ -5,6 +5,7 @@ import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 
 export function LoggedFoods({ date }: { date: Date }) {
@@ -24,7 +25,34 @@ export function LoggedFoods({ date }: { date: Date }) {
     },
   });
 
-  if (isLoading) return <div>Loading diary...</div>;
+  if (isLoading) {
+    return (
+      <Card className="w-full max-w-4xl border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-xl text-primary">Today's Diary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-lg bg-background/50 p-3 shadow-sm border border-white/5"
+              >
+                <div className="space-y-1">
+                  <Skeleton className="h-5 w-40" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-8 w-8 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
   if (!logs || logs.length === 0) return null;
 
   return (

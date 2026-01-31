@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { type DRIMetrics } from "~/lib/clinical-calculator";
 import { api } from "~/trpc/react";
 
@@ -33,7 +34,7 @@ export function NutritionTargets({
   date: Date;
 }) {
   const formattedDate = format(date, "yyyy-MM-dd");
-  const { data: intake } = api.food.getDailyNutrition.useQuery({
+  const { data: intake, isLoading } = api.food.getDailyNutrition.useQuery({
     date: formattedDate,
   });
 
@@ -168,6 +169,101 @@ export function NutritionTargets({
 
   const energyIntake = intake?.energy_kcal || 0;
   const energyProgress = (energyIntake / metrics.tee) * 100;
+
+  // Skeleton loading UI for nutrient rows
+  const NutrientRowSkeleton = () => (
+    <div className="flex flex-col gap-1 border-white/5 border-b py-2 last:border-0">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-4 w-20" />
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-1.5 flex-1 rounded-full" />
+        <Skeleton className="h-3 w-8" />
+      </div>
+    </div>
+  );
+
+  if (isLoading) {
+    return (
+      <Card className="w-full max-w-4xl border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="text-2xl text-primary flex justify-between items-center">
+            <span>Nutritional Progress</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              Today
+            </span>
+          </CardTitle>
+          <CardDescription>
+            Daily tracking of nutrients vs. customized clinical targets.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          {/* Key Metrics Skeleton */}
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="border-none bg-background/50 shadow-sm overflow-hidden relative">
+              <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                <span className="text-sm font-medium uppercase text-muted-foreground">
+                  BMI
+                </span>
+                <Skeleton className="h-9 w-16 mt-1" />
+              </CardContent>
+            </Card>
+            <Card className="border-none bg-background/50 shadow-sm overflow-hidden relative md:col-span-2">
+              <CardContent className="flex items-center justify-between p-6">
+                <div className="flex flex-col items-start">
+                  <span className="text-sm font-medium uppercase text-muted-foreground">
+                    Energy Intake
+                  </span>
+                  <Skeleton className="h-9 w-32 mt-1" />
+                </div>
+                <div className="flex flex-col items-end">
+                  <Skeleton className="h-8 w-12" />
+                  <Skeleton className="h-3 w-20 mt-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Macronutrients Skeleton */}
+          <div className="space-y-4">
+            <h3 className="border-b border-primary/20 pb-2 text-lg font-semibold text-primary">
+              Macronutrients
+            </h3>
+            <div className="grid gap-x-12 gap-y-2 text-sm sm:grid-cols-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <NutrientRowSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+
+          {/* Vitamins Skeleton */}
+          <div className="space-y-4">
+            <h3 className="border-b border-primary/20 pb-2 text-lg font-semibold text-primary">
+              Vitamins
+            </h3>
+            <div className="grid gap-x-12 gap-y-2 text-sm sm:grid-cols-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <NutrientRowSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+
+          {/* Minerals Skeleton */}
+          <div className="space-y-4">
+            <h3 className="border-b border-primary/20 pb-2 text-lg font-semibold text-primary">
+              Minerals
+            </h3>
+            <div className="grid gap-x-12 gap-y-2 text-sm sm:grid-cols-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <NutrientRowSkeleton key={i} />
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-4xl border-primary/20 bg-primary/5">

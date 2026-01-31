@@ -1,20 +1,25 @@
 "use client";
 
 import { format } from "date-fns";
-import { Check, Loader2, Search } from "lucide-react";
+import { Check, Info, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { ContextPlate, type PlateItem } from "./context-plate";
+import { FoodDetailsDialog } from "./food-details-dialog";
+
+type DataSource = "foundation" | "branded";
 
 export function FoodSearch({ date }: { date: Date }) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [dataSource, setDataSource] = useState<DataSource>("branded");
 
   const utils = api.useUtils();
   const logMutation = api.food.logFoods.useMutation({
@@ -25,12 +30,15 @@ export function FoodSearch({ date }: { date: Date }) {
   });
 
   const { data: foods, isLoading } = api.food.search.useQuery(
-    { query: debouncedQuery },
+    { query: debouncedQuery, dataSource },
     { enabled: debouncedQuery.length > 2 },
   );
 
   const [plateItems, setPlateItems] = useState<PlateItem[]>([]);
   const [isPlateOpen, setIsPlateOpen] = useState(false);
+  const [viewingFoodCode, setViewingFoodCode] = useState<string | null>(null);
+  const [viewingDataSource, setViewingDataSource] =
+    useState<DataSource>("branded");
 
   const toggleSelection = (food: any) => {
     setPlateItems((prev) => {
@@ -56,7 +64,7 @@ export function FoodSearch({ date }: { date: Date }) {
 
   return (
     <div className="w-full max-w-4xl space-y-8">
-      <div className="relative mx-auto max-w-2xl">
+      <div className="relative mx-auto max-w-2xl space-y-4">
         <div className="relative flex items-center">
           <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
           <Input
@@ -67,7 +75,11 @@ export function FoodSearch({ date }: { date: Date }) {
                 setDebouncedQuery(query);
               }
             }}
-            placeholder="Search for organic foods, snacks, drinks..."
+            placeholder={
+              dataSource === "foundation"
+                ? "Search for real foods (apple, chicken, rice...)"
+                : "Search for branded products..."
+            }
             type="text"
             value={query}
           />
@@ -78,12 +90,56 @@ export function FoodSearch({ date }: { date: Date }) {
             Search
           </Button>
         </div>
+
+        {/* Data Source Toggle */}
+        <div className="flex justify-center gap-2">
+          <Button
+            variant={dataSource === "foundation" ? "default" : "outline"}
+            className={cn(
+              "rounded-full px-4",
+              dataSource === "foundation" && "bg-green-500 hover:bg-green-600",
+            )}
+            onClick={() => {
+              setDataSource("foundation");
+              setDebouncedQuery("");
+              setQuery("");
+            }}
+          >
+            🥬 Real Foods
+          </Button>
+          <Button
+            variant={dataSource === "branded" ? "default" : "outline"}
+            className={cn(
+              "rounded-full px-4",
+              dataSource === "branded" && "bg-blue-500 hover:bg-blue-600",
+            )}
+            onClick={() => {
+              setDataSource("branded");
+              setDebouncedQuery("");
+              setQuery("");
+            }}
+          >
+            🏷️ Branded
+          </Button>
+        </div>
       </div>
 
       <div className="min-h-[100px]">
         {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-xl border bg-card p-5">
+                <div className="pr-8">
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-1/2 mb-3" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                    <Skeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <Skeleton className="h-8 w-full mt-4" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -147,6 +203,19 @@ export function FoodSearch({ date }: { date: Date }) {
                           </Badge>
                         )}
                       </div>
+
+                      <Button
+                        className="mt-4 h-8 w-full justify-start px-2 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingFoodCode(food.code || null);
+                          setViewingDataSource(dataSource);
+                        }}
+                        variant="ghost"
+                      >
+                        <Info className="mr-2 h-4 w-4" />
+                        View details
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -197,6 +266,12 @@ export function FoodSearch({ date }: { date: Date }) {
             p.map((item, i) => (i === idx ? { ...item, ...update } : item)),
           )
         }
+      />
+      <FoodDetailsDialog
+        foodCode={viewingFoodCode}
+        dataSource={viewingDataSource}
+        isOpen={!!viewingFoodCode}
+        onClose={() => setViewingFoodCode(null)}
       />
     </div>
   );
