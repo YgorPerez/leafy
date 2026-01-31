@@ -42,17 +42,19 @@ export function FoodDetailsDialog({
               food?.product_name?.[0]?.text || "Food Details"
             )}
           </DialogTitle>
-          <DialogDescription>
-            {isLoading ? (
-              <Skeleton className="h-4 w-40 mt-1" />
-            ) : (
-              <>
-                {food?.brands && (
-                  <span className="font-medium">{food.brands}</span>
-                )}
-                {food?.quantity && <span> • {food.quantity}</span>}
-              </>
-            )}
+          <DialogDescription asChild>
+            <div>
+              {isLoading ? (
+                <Skeleton className="h-4 w-40 mt-1" />
+              ) : (
+                <>
+                  {food?.brands && (
+                    <span className="font-medium">{food.brands}</span>
+                  )}
+                  {food?.quantity && <span> • {food.quantity}</span>}
+                </>
+              )}
+            </div>
           </DialogDescription>
         </DialogHeader>
 

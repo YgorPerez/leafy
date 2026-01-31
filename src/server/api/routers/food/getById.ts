@@ -114,14 +114,14 @@ async function getBrandedFoodById(code: string): Promise<FoodProduct | null> {
 // Foundation Food Lookup (USDA Foundation JSON)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function getFoundationById(fdcId: string): FoodProduct | null {
+async function getFoundationById(fdcId: string): Promise<FoodProduct | null> {
   const numericId = Number.parseInt(fdcId, 10);
   if (Number.isNaN(numericId)) {
     console.log("[getById] Invalid foundation ID:", fdcId);
     return null;
   }
 
-  const food = getFoundationFoodById(numericId);
+  const food = await getFoundationFoodById(numericId);
   if (!food) {
     console.log("[getById] Foundation food not found:", numericId);
     return null;
@@ -159,7 +159,7 @@ export const getById = publicProcedure
 
     // 2. Look up based on data source
     if (dataSource === "foundation") {
-      return getFoundationById(id);
+      return await getFoundationById(id);
     }
 
     // Branded food lookup

@@ -57,8 +57,11 @@ async function searchBrandedFoods(
     }));
 }
 
-function searchFoundation(query: string, limit: number): FoodSearchResult[] {
-  const foods = searchFoundationFoods(query, limit);
+async function searchFoundation(
+  query: string,
+  limit: number,
+): Promise<FoodSearchResult[]> {
+  const foods = await searchFoundationFoods(query, limit);
   return foods.map(mapFoundationToSearchResult);
 }
 
@@ -88,7 +91,7 @@ export const search = publicProcedure
     let globalResults: FoodSearchResult[];
 
     if (dataSource === "foundation") {
-      globalResults = searchFoundation(query, limit);
+      globalResults = await searchFoundation(query, limit);
     } else {
       globalResults = await searchBrandedFoods(query, limit);
     }

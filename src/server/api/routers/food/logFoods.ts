@@ -14,10 +14,13 @@ import { getFoundationFoodById } from "./foundation";
 /**
  * Extract nutrient values from a foundation food.
  */
-function extractFoundationNutrients(
+/**
+ * Extract nutrient values from a foundation food.
+ */
+async function extractFoundationNutrients(
   fdcId: number,
-): Record<string, number> | null {
-  const food = getFoundationFoodById(fdcId);
+): Promise<Record<string, number> | null> {
+  const food = await getFoundationFoodById(fdcId);
   if (!food) return null;
 
   const nutrients: Record<string, number> = {};
@@ -64,7 +67,7 @@ export const logFoods = publicProcedure
           ) {
             const fdcId = Number.parseInt(item.foodCode, 10);
             if (!Number.isNaN(fdcId)) {
-              baseNutrients = extractFoundationNutrients(fdcId);
+              baseNutrients = await extractFoundationNutrients(fdcId);
             }
           }
           // Global database lookup (branded foods)

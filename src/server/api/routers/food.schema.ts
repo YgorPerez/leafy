@@ -232,15 +232,15 @@ export const FoodNutrientDerivationSchema = z.object({
 
 /** USDA food nutrient entry */
 export const FoundationFoodNutrientSchema = z.object({
-  type: z.string().optional(),
-  id: z.number().optional(),
+  type: z.string().optional().nullable(),
+  id: z.number().optional().nullable(),
   nutrient: FoundationNutrientRefSchema,
-  dataPoints: z.number().optional(),
-  foodNutrientDerivation: FoodNutrientDerivationSchema.optional(),
-  max: z.number().optional(),
-  min: z.number().optional(),
-  median: z.number().optional(),
-  amount: z.number().optional().default(0),
+  dataPoints: z.number().optional().nullable(),
+  foodNutrientDerivation: FoodNutrientDerivationSchema.optional().nullable(),
+  max: z.number().optional().nullable(),
+  min: z.number().optional().nullable(),
+  median: z.number().optional().nullable(),
+  amount: z.number().optional().nullable().default(0),
 });
 
 /** USDA measure unit */
@@ -252,20 +252,20 @@ export const MeasureUnitSchema = z.object({
 
 /** USDA food portion */
 export const FoundationFoodPortionSchema = z.object({
-  id: z.number().optional(),
-  value: z.number().optional(),
+  id: z.number().optional().nullable(),
+  value: z.number().optional().nullable(),
   measureUnit: MeasureUnitSchema,
-  modifier: z.string().optional(),
+  modifier: z.string().optional().nullable(),
   gramWeight: z.number(),
-  sequenceNumber: z.number().optional(),
-  minYearAcquired: z.number().optional(),
-  amount: z.number().optional(),
+  sequenceNumber: z.number().optional().nullable(),
+  minYearAcquired: z.number().optional().nullable(),
+  amount: z.number().optional().nullable(),
 });
 
 /** USDA food category */
 export const FoundationFoodCategorySchema = z.object({
-  id: z.number().optional(),
-  code: z.string().optional(),
+  id: z.number().optional().nullable(),
+  code: z.string().optional().nullable(),
   description: z.string(),
 });
 
@@ -274,17 +274,17 @@ export const FoundationFoodSchema = z.object({
   foodClass: z.string(),
   description: z.string(),
   foodNutrients: z.array(FoundationFoodNutrientSchema),
-  scientificName: z.string().optional(),
-  foodAttributes: z.array(z.any()).optional(),
-  nutrientConversionFactors: z.array(z.any()).optional(),
-  isHistoricalReference: z.boolean().optional(),
-  ndbNumber: z.number().optional(),
+  scientificName: z.string().optional().nullable(),
+  foodAttributes: z.array(z.any()).optional().nullable(),
+  nutrientConversionFactors: z.array(z.any()).optional().nullable(),
+  isHistoricalReference: z.boolean().optional().nullable(),
+  ndbNumber: z.number().optional().nullable(),
   fdcId: z.number(),
   dataType: z.string(),
-  foodCategory: FoundationFoodCategorySchema.optional(),
-  foodPortions: z.array(FoundationFoodPortionSchema).optional(),
-  publicationDate: z.string().optional(),
-  inputFoods: z.array(z.any()).optional(),
+  foodCategory: FoundationFoodCategorySchema.optional().nullable(),
+  foodPortions: z.array(FoundationFoodPortionSchema).optional().nullable(),
+  publicationDate: z.string().optional().nullable(),
+  inputFoods: z.array(z.any()).optional().nullable(),
 });
 
 /** Search input schema with data source selection */

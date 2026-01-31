@@ -1,5 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
+import { getDuckDBConnection } from "~/server/duckdb";
 import {
   type FoodProduct,
   type FoodSearchResult,
@@ -9,124 +8,90 @@ import {
 } from "../food.schema";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Foundation Foods Data Store
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** Path to the USDA Foundation Foods JSON file */
-const FOUNDATION_JSON_PATH = path.join(process.cwd(), "USDA-foundation.json");
-
-/** Cached foundation foods data */
-let foundationFoodsCache: FoundationFood[] | null = null;
-
-/** Index for fast lookup by fdcId */
-let foundationFoodsIndex: Map<number, FoundationFood> | null = null;
-
-/**
- * Load foundation foods from JSON file.
- * Data is cached in memory for fast subsequent lookups.
- */
-export function loadFoundationFoods(): FoundationFood[] {
-  if (foundationFoodsCache) {
-    return foundationFoodsCache;
-  }
-
-  console.log("[foundation] Loading USDA Foundation Foods...");
-  const startTime = Date.now();
-
-  const raw = fs.readFileSync(FOUNDATION_JSON_PATH, "utf-8");
-  const data = JSON.parse(raw) as { FoundationFoods: unknown[] };
-
-  // Parse and validate each food item
-  foundationFoodsCache = data.FoundationFoods.map((item) => {
-    const result = FoundationFoodSchema.safeParse(item);
-    if (!result.success) {
-      console.warn("[foundation] Failed to parse food:", result.error.message);
-      return null;
-    }
-    return result.data;
-  }).filter((item): item is FoundationFood => item !== null);
-
-  // Build index for fast lookup
-  foundationFoodsIndex = new Map();
-  for (const food of foundationFoodsCache) {
-    foundationFoodsIndex.set(food.fdcId, food);
-  }
-
-  const elapsed = Date.now() - startTime;
-  console.log(
-    `[foundation] Loaded ${foundationFoodsCache.length} foods in ${elapsed}ms`,
-  );
-
-  return foundationFoodsCache;
-}
-
-/**
- * Get a foundation food by its FDC ID.
- */
-export function getFoundationFoodById(
-  fdcId: number,
-): FoundationFood | undefined {
-  if (!foundationFoodsIndex) {
-    loadFoundationFoods();
-  }
-  return foundationFoodsIndex?.get(fdcId);
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Search Functions
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Search foundation foods by description.
- * Uses case-insensitive substring matching.
+ * Search foundation foods by description using DuckDB.
  */
-export function searchFoundationFoods(
+export async function searchFoundationFoods(
   query: string,
   limit: number,
-): FoundationFood[] {
-  const foods = loadFoundationFoods();
+): Promise<FoundationFood[]> {
+  const connection = await getDuckDBConnection();
   const lowerQuery = query.toLowerCase();
 
-  // Score and filter results
-  const matches = foods
-    .map((food) => {
-      const desc = food.description.toLowerCase();
-      let score = 0;
+  const reader = await connection.runAndReadAll(
+    `
+    SELECT
+      fd.json_data,
+      (CASE
+        WHEN fs.lower_description = ? THEN 100
+        WHEN fs.lower_description LIKE ? THEN 80
+        WHEN fs.lower_description LIKE ? OR fs.lower_description LIKE ? THEN 60
+        WHEN fs.lower_description LIKE ? THEN 40
+        WHEN lower(fs.category) LIKE ? THEN 20
+        ELSE 0
+      END) as score
+    FROM foundation_search fs
+    JOIN foundation_details fd ON fs.fdcId = fd.fdcId
+    WHERE score > 0
+    ORDER BY score DESC
+    LIMIT ?
+    `,
+    [
+      lowerQuery,
+      `${lowerQuery}%`,
+      `% ${lowerQuery}%`,
+      `%${lowerQuery} %`,
+      `%${lowerQuery}%`,
+      `%${lowerQuery}%`,
+      limit,
+    ],
+  );
 
-      // Exact match gets highest score
-      if (desc === lowerQuery) {
-        score = 100;
-      }
-      // Starts with query gets high score
-      else if (desc.startsWith(lowerQuery)) {
-        score = 80;
-      }
-      // Contains query as a word boundary gets medium score
-      else if (
-        desc.includes(` ${lowerQuery}`) ||
-        desc.includes(`${lowerQuery} `)
-      ) {
-        score = 60;
-      }
-      // Contains query anywhere gets low score
-      else if (desc.includes(lowerQuery)) {
-        score = 40;
-      }
-      // Check category as fallback
-      else if (
-        food.foodCategory?.description.toLowerCase().includes(lowerQuery)
-      ) {
-        score = 20;
-      }
+  return reader.getRowObjects().map((row) => {
+    const rawJson = row.json_data;
+    try {
+      const jsonData =
+        typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+      return FoundationFoodSchema.parse(jsonData);
+    } catch (e) {
+      console.error("[foundation] Failed to parse food JSON:", e);
+      console.error(
+        "[foundation] Raw data snippet:",
+        String(rawJson).slice(0, 200),
+      );
+      throw e;
+    }
+  });
+}
 
-      return { food, score };
-    })
-    .filter((item) => item.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit)
-    .map((item) => item.food);
+/**
+ * Get a foundation food by its FDC ID using DuckDB.
+ */
+export async function getFoundationFoodById(
+  fdcId: number,
+): Promise<FoundationFood | undefined> {
+  const connection = await getDuckDBConnection();
+  const reader = await connection.runAndReadAll(
+    "SELECT json_data FROM foundation_details WHERE fdcId = ? LIMIT 1",
+    [fdcId],
+  );
 
-  return matches;
+  const rows = reader.getRowObjects();
+  if (rows.length === 0) return undefined;
+
+  const row = rows[0]!;
+  const rawJson = row.json_data;
+  try {
+    const jsonData =
+      typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+    return FoundationFoodSchema.parse(jsonData);
+  } catch (e) {
+    console.error("[foundation] Failed to parse food JSON by ID:", e);
+    throw e;
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -142,9 +107,9 @@ export function mapFoundationToSearchResult(
   return {
     code: String(food.fdcId),
     product_name: food.description,
-    brands: null, // Foundation foods don't have brands
+    brands: null,
     categories: food.foodCategory?.description ?? null,
-    nutriscore_grade: null, // Not applicable for foundation foods
+    nutriscore_grade: null,
     scans_n: 0,
     source: "Foundation",
   };
@@ -173,12 +138,10 @@ function mapFoundationNutrientToNutriment(
  * Map a foundation food to the full food product format.
  */
 export function mapFoundationToProduct(food: FoundationFood): FoodProduct {
-  // Map nutrients
   const nutriments: Nutriment[] = food.foodNutrients.map(
     mapFoundationNutrientToNutriment,
   );
 
-  // Get primary serving info
   const primaryPortion = food.foodPortions?.[0];
   const servingSize = primaryPortion
     ? `${primaryPortion.amount ?? primaryPortion.value ?? 1} ${primaryPortion.measureUnit.name} (${primaryPortion.gramWeight}g)`
@@ -201,43 +164,29 @@ export function mapFoundationToProduct(food: FoundationFood): FoodProduct {
     categories_properties: null,
     nutriments,
     source: "Foundation",
-
-    // Identification
     completeness: 1,
-
-    // Timestamps
     created_t: null,
     last_modified_t: null,
     creator: "USDA",
-
-    // Scores (not applicable for foundation foods)
     ecoscore_grade: null,
     ecoscore_score: null,
     nutriscore_grade: null,
     nutriscore_score: null,
     nova_group: null,
-
-    // Product details
     generic_name: food.scientificName
       ? [{ lang: "en", text: food.scientificName }]
       : null,
     ingredients_n: null,
     ingredients_text: null,
-
-    // Serving information
     quantity: "100g",
     serving_quantity: servingQuantity,
     serving_size: servingSize,
     stores: null,
-
-    // Additional info
     additives_n: 0,
     additives_tags: [],
     allergens_tags: [],
     countries_tags: ["en:united-states"],
     main_countries_tags: ["en:united-states"],
-
-    // Popularity
     popularity_key: null,
     scans_n: 0,
     unique_scans_n: 0,
@@ -248,18 +197,15 @@ export function mapFoundationToProduct(food: FoundationFood): FoodProduct {
 // Utility Exports
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Clear the foundation foods cache.
- * Useful for testing or when the JSON file is updated.
- */
 export function clearFoundationCache(): void {
-  foundationFoodsCache = null;
-  foundationFoodsIndex = null;
+  // No-op
 }
 
-/**
- * Get the number of cached foundation foods.
- */
-export function getFoundationFoodsCount(): number {
-  return foundationFoodsCache?.length ?? 0;
+export async function getFoundationFoodsCount(): Promise<number> {
+  const connection = await getDuckDBConnection();
+  const reader = await connection.runAndReadAll(
+    "SELECT count(*) as count FROM foundation_search",
+  );
+  const rows = reader.getRowObjects();
+  return Number(rows[0]?.count ?? 0);
 }
