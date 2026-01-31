@@ -13,10 +13,6 @@ import {
   searchFoundationFoods,
 } from "./foundation";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Helper: Map custom food to search result format
-// ─────────────────────────────────────────────────────────────────────────────
-
 interface CustomFoodRecord {
   id: string;
   name: string;
@@ -34,10 +30,6 @@ function mapCustomFoodToSearchResult(food: CustomFoodRecord): FoodSearchResult {
     source: "User",
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Branded Foods Search (OpenFoodFacts parquet)
-// ─────────────────────────────────────────────────────────────────────────────
 
 async function searchBrandedFoods(
   query: string,
@@ -65,21 +57,11 @@ async function searchBrandedFoods(
     }));
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Foundation Foods Search (USDA Foundation JSON)
-// ─────────────────────────────────────────────────────────────────────────────
-
 function searchFoundation(query: string, limit: number): FoodSearchResult[] {
   const foods = searchFoundationFoods(query, limit);
   return foods.map(mapFoundationToSearchResult);
 }
 
-/**
- * Search for foods across custom foods and global database.
- * Results are prioritized by source reliability and whole food categories.
- *
- * @param dataSource - "foundation" for real/whole foods, "branded" for commercial products
- */
 export const search = publicProcedure
   .input(FoodSearchInputSchema)
   .output(FoodSearchOutputSchema)
@@ -87,7 +69,6 @@ export const search = publicProcedure
     const { query, limit, dataSource } = input;
     const searchPattern = `%${query}%`;
 
-    // 1. Search custom foods (user's private data) - only for branded search
     let customResults: FoodSearchResult[] = [];
     if (ctx.session && dataSource === "branded") {
       const customFoods = await ctx.db.query.customFood.findMany({
@@ -104,14 +85,11 @@ export const search = publicProcedure
       customResults = customFoods.map(mapCustomFoodToSearchResult);
     }
 
-    // 2. Search based on data source
     let globalResults: FoodSearchResult[];
 
     if (dataSource === "foundation") {
-      // Search USDA Foundation Foods (real/whole foods)
       globalResults = searchFoundation(query, limit);
     } else {
-      // Search OpenFoodFacts branded foods
       globalResults = await searchBrandedFoods(query, limit);
     }
 

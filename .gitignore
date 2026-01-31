@@ -11,6 +11,8 @@ test_results.json
 # database
 db.sqlite
 db.sqlite-journal
+food.db
+food.db.wal
 drizzle/meta/
 
 # next.js
