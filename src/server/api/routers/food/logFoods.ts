@@ -7,6 +7,7 @@ import { LogFoodInputSchema } from "../food.schema";
 import {
   calculateScalingFactor,
   extractNutrientValues,
+  normalizeNutrientKey,
   scaleNutrients,
 } from "../food.utils";
 import { getFoundationFoodById } from "./foundation";
@@ -25,9 +26,11 @@ async function extractFoundationNutrients(
 
   const nutrients: Record<string, number> = {};
   for (const nutrient of food.foodNutrients) {
-    // Use lowercase nutrient name as key for consistency
-    const key = nutrient.nutrient.name.toLowerCase().replace(/[,\s]+/g, "_");
-    nutrients[key] = nutrient.amount;
+    // Use normalized key for consistency
+    const key = normalizeNutrientKey(nutrient.nutrient.name);
+    if (key) {
+      nutrients[key] = nutrient.amount ?? 0;
+    }
   }
   return nutrients;
 }

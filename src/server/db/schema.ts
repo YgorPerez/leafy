@@ -27,7 +27,9 @@ export const user = sqliteTable("user", (d) => ({
   height: d.real(), // cm
   weight: d.real(), // kg
   activityLevel: d.text({ length: 20 }), // 'sedentary', 'active', etc.
-  goals: d.text({ mode: "json" }).$type<Record<string, number>>(), // Custom nutrient goals
+  goals: d
+    .text({ mode: "json" })
+    .$type<Record<string, { target?: number; min?: number; max?: number }>>(), // Custom nutrient goals
 }));
 
 export const userRelations = relations(user, ({ many }) => ({

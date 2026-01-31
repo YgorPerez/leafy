@@ -7,7 +7,17 @@ import { user } from "~/server/db/schema";
  * Update user's nutritional goals.
  */
 export const updateGoals = publicProcedure
-  .input(z.object({ goals: z.record(z.number()) }))
+  .input(
+    z.object({
+      goals: z.record(
+        z.object({
+          target: z.number().optional(),
+          min: z.number().optional(),
+          max: z.number().optional(),
+        }),
+      ),
+    }),
+  )
   .mutation(async ({ ctx, input }) => {
     if (!ctx.session?.user) {
       throw new Error("Unauthorized");

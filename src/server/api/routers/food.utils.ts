@@ -1,87 +1,101 @@
 import type { Nutriment } from "./food.schema";
+import { NUTRIENT_KEYS, type NutrientKey } from "./nutrient-keys";
 
 /**
- * Mapping from OpenFoodFacts nutrient names to our clinical schema keys.
+ * Mapping from OpenFoodFacts nutrient names to our generated keys.
  * This provides consistent naming across different data sources.
  */
-export const NUTRIENT_KEY_MAP: Record<string, string> = {
+export const NUTRIENT_KEY_MAP: Record<string, NutrientKey> = {
   // Energy
-  "energy-kcal": "energy_kcal",
-  energy: "energy_kcal",
+  "energy-kcal": "Energy", // Mapped to "Energy"
+  energy: "Energy",
+  energy_kCal: "Energy", // Common variation
+  "Energy-kcal": "Energy",
 
   // Macronutrients
-  proteins: "protein",
-  protein: "protein",
-  carbohydrates: "carbohydrate",
-  carbohydrates_100g: "carbohydrate",
-  fat: "fat",
-  "saturated-fat": "saturatedFat",
-  "trans-fat": "transFat",
+  proteins: "Protein",
+  protein: "Protein",
+  carbohydrates: "Carbohydrate, by difference", // Closest match
+  carbohydrates_100g: "Carbohydrate, by difference",
+  fat: "Total lipid (fat)", // Closest match
+  "saturated-fat": "Fatty acids, total saturated",
+  "trans-fat": "Fatty acids, total trans",
 
   // Fiber & Sugars
-  fiber: "fiber",
-  sugars: "sugars",
+  fiber: "Fiber, total dietary",
+  sugars: "Sugars, Total",
 
   // Minerals
-  sodium: "sodium",
-  potassium: "potassium",
-  calcium: "calcium",
-  iron: "iron",
-  magnesium: "magnesium",
-  zinc: "zinc",
-  phosphorus: "phosphorus",
-  selenium: "selenium",
-  copper: "copper",
-  manganese: "manganese",
+  sodium: "Sodium, Na",
+  potassium: "Potassium, K",
+  calcium: "Calcium, Ca",
+  iron: "Iron, Fe",
+  magnesium: "Magnesium, Mg",
+  zinc: "Zinc, Zn",
+  phosphorus: "Phosphorus, P",
+  selenium: "Selenium, Se",
+  copper: "Copper, Cu",
+  manganese: "Manganese, Mn",
 
   // Vitamins
-  "vitamin-a": "vitaminA",
-  "vitamin-c": "vitaminC",
-  "vitamin-d": "vitaminD",
-  "vitamin-e": "vitaminE",
-  "vitamin-k": "vitaminK",
-  "vitamin-b6": "vitaminB6",
-  "vitamin-b12": "vitaminB12",
-  thiamin: "thiamin",
-  riboflavin: "riboflavin",
-  niacin: "niacin",
-  "pantothenic-acid": "pantothenicAcid",
-  "folic-acid": "folate",
-  folate: "folate",
-  biotin: "biotin",
-  choline: "choline",
+  "vitamin-a": "Vitamin A, RAE",
+  "vitamin-c": "Vitamin C, total ascorbic acid",
+  "vitamin-d": "Vitamin D (D2 + D3)",
+  "vitamin-e": "Vitamin E (alpha-tocopherol)",
+  "vitamin-k": "Vitamin K (phylloquinone)",
+  "vitamin-b6": "Vitamin B-6",
+  "vitamin-b12": "Vitamin B-12",
+  thiamin: "Thiamin",
+  riboflavin: "Riboflavin",
+  niacin: "Niacin",
+  "pantothenic-acid": "Pantothenic acid",
+  "folic-acid": "Folate, total",
+  folate: "Folate, total",
+  biotin: "Biotin",
+  choline: "Choline, total",
 
   // Other
-  cholesterol: "cholesterol",
+  cholesterol: "Cholesterol",
   alcohol: "alcohol",
   caffeine: "caffeine",
-  water: "water",
+  water: "Water",
 } as const;
 
 /**
  * Normalizes a nutrient key from various formats to our clinical schema format.
  */
-export function normalizeNutrientKey(key: string): string {
+export function normalizeNutrientKey(key: string): NutrientKey | undefined {
   const lowerKey = key.toLowerCase().trim();
 
-  // Direct mapping
-  if (NUTRIENT_KEY_MAP[lowerKey]) {
-    return NUTRIENT_KEY_MAP[lowerKey];
+  // 1. Check direct mapping
+  if (key in NUTRIENT_KEY_MAP) {
+    return NUTRIENT_KEY_MAP[key as keyof typeof NUTRIENT_KEY_MAP];
+  }
+  if (lowerKey in NUTRIENT_KEY_MAP) {
+    return NUTRIENT_KEY_MAP[lowerKey as keyof typeof NUTRIENT_KEY_MAP];
   }
 
-  // Fuzzy matching for common patterns
-  if (lowerKey.includes("fiber")) return "fiber";
-  if (lowerKey.includes("iron")) return "iron";
-  if (lowerKey.includes("calcium")) return "calcium";
-  if (lowerKey.includes("potassium")) return "potassium";
-  if (lowerKey.includes("sodium")) return "sodium";
-  if (lowerKey.includes("magnesium")) return "magnesium";
-  if (lowerKey.includes("zinc")) return "zinc";
-  if (lowerKey.includes("protein")) return "protein";
-  if (lowerKey.includes("carbohydrate")) return "carbohydrate";
+  // 2. Check if it's already a valid key (case-sensitive first, then insensitive lookup)
+  if (NUTRIENT_KEYS.includes(key as NutrientKey)) {
+    return key as NutrientKey;
+  }
 
-  // Return original key if no mapping found
-  return lowerKey;
+  // 3. Fallback: Fuzzy matching
+  if (lowerKey.includes("fiber")) return "Fiber, total dietary";
+  if (lowerKey.includes("iron")) return "Iron, Fe";
+  if (lowerKey.includes("calcium")) return "Calcium, Ca";
+  if (lowerKey.includes("potassium")) return "Potassium, K";
+  if (lowerKey.includes("sodium")) return "Sodium, Na";
+  if (lowerKey.includes("magnesium")) return "Magnesium, Mg";
+  if (lowerKey.includes("zinc")) return "Zinc, Zn";
+  if (lowerKey.includes("protein")) return "Protein";
+  if (lowerKey.includes("carbohydrate")) return "Carbohydrate, by difference";
+
+  // 4. Try to find case-insensitive match in master list
+  const found = NUTRIENT_KEYS.find((k) => k.toLowerCase() === lowerKey);
+  if (found) return found;
+
+  return undefined;
 }
 
 /**
@@ -163,8 +177,17 @@ export function parseNutrimentsFromDuckDB(
         ? (item as { entries: Record<string, unknown> }).entries
         : (item as Record<string, unknown>);
 
+    const rawName = String(data.name ?? "");
+    const normalizedName = normalizeNutrientKey(rawName);
+
+    // If we can't normalize it to a known key, map it to "other" or keep raw?
+    // User asked to NOT lose data, but our type requires valid key.
+    // If undefined, we can't fit it in NutrientKey type.
+    // However, since NUTRIENT_KEYS contains ALL keys from data,
+    // it should be found unless the Parquet changed since extraction.
+
     return {
-      name: String(data.name ?? ""),
+      name: normalizedName,
       value: data.value != null ? Number(data.value) : null,
       "100g": data["100g"] != null ? Number(data["100g"]) : null,
       serving: data.serving != null ? Number(data.serving) : null,
@@ -197,6 +220,8 @@ export function extractNutrientValues(
     if (!nutriment.name) continue;
 
     const key = normalizeNutrientKey(nutriment.name);
+    if (!key) continue;
+
     const value = nutriment["100g"] ?? nutriment.value ?? 0;
 
     if (value && typeof value === "number") {

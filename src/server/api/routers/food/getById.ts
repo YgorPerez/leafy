@@ -25,10 +25,13 @@ interface CustomFoodFullRecord {
   updatedAt: Date | null;
 }
 
+import { normalizeNutrientKey } from "../food.utils";
+
+// ... (inside mapCustomFoodToProduct)
 function mapCustomFoodToProduct(food: CustomFoodFullRecord): FoodProduct {
   const nutriments: Nutriment[] = food.nutriments
     ? Object.entries(food.nutriments).map(([name, value]) => ({
-        name,
+        name: normalizeNutrientKey(name),
         value: Number(value),
         "100g": Number(value),
         serving: null,

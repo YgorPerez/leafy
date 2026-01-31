@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthForm } from "~/app/_components/auth-form";
 import { Dashboard } from "~/app/_components/dashboard";
+import { ModeToggle } from "~/components/mode-toggle";
 import { Button } from "~/components/ui/button";
 import { calculateDRI, type UserProfile } from "~/lib/clinical-calculator";
 import { auth } from "~/server/better-auth";
@@ -42,7 +43,10 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-start bg-background text-foreground">
+      <main className="flex min-h-screen flex-col items-center justify-start bg-background text-foreground relative">
+        <div className="absolute top-4 right-4">
+          <ModeToggle />
+        </div>
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
           <div className="flex flex-col items-center gap-4 text-center">
             <h1 className="font-extrabold text-6xl tracking-tight sm:text-[6rem]">
