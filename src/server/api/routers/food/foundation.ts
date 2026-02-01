@@ -123,7 +123,8 @@ import { normalizeNutrientKey } from "../food.utils";
 function mapFoundationNutrientToNutriment(
   nutrient: FoundationFood["foodNutrients"][number],
 ): Nutriment {
-  const name = normalizeNutrientKey(nutrient.nutrient.name);
+  const name =
+    normalizeNutrientKey(nutrient.nutrient.name) ?? nutrient.nutrient.name;
 
   return {
     name,

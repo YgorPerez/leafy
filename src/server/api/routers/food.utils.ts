@@ -96,7 +96,8 @@ export function parseNutrimentsFromDuckDB(
         : (item as Record<string, unknown>);
 
     const rawName = String(data.name ?? "");
-    const normalizedName = normalizeNutrientKey(rawName);
+    const normalizedName =
+      normalizeNutrientKey(rawName) ?? `not_mapped_${rawName}`;
 
     // If we can't normalize it to a known key, map it to "other" or keep raw?
     // User asked to NOT lose data, but our type requires valid key.

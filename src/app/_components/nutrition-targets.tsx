@@ -2,11 +2,7 @@
 
 import { format } from "date-fns";
 import { useState } from "react";
-import {
-  type Goal,
-  HIERARCHY,
-  useNutritionGoals,
-} from "~/app/_hooks/use-nutrition-goals";
+import { type Goal, useNutritionGoals } from "~/app/_hooks/use-nutrition-goals";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -27,7 +23,6 @@ import type { DRIMetrics } from "~/lib/clinical-calculator";
 import { type NutrientValueRef } from "~/lib/clinical-calculator";
 import {
   type CanonicalNutrientKey,
-  getClinicalValue,
   NUTRIENT_REGISTRY,
   type NutrientCategory,
   type NutrientMetadata,
@@ -36,7 +31,8 @@ import { api } from "~/trpc/react";
 import { BodyCompositionCard } from "./nutrition/body-composition-card";
 import { EnergyCard } from "./nutrition/energy-card";
 import { MacroEditor } from "./nutrition/macro-editor";
-import { NutrientRow, NutrientRowSkeleton } from "./nutrition/nutrient-row";
+import { NutrientHierarchy } from "./nutrition/nutrient-hierarchy";
+import { NutrientRowSkeleton } from "./nutrition/nutrient-row";
 
 export function NutritionTargets({
   metrics,
@@ -184,77 +180,15 @@ export function NutritionTargets({
                 </div>
 
                 <div className="grid gap-x-12 gap-y-2 text-sm sm:grid-cols-2">
-                  {sectionNutrients.map(([key, meta]) => (
-                    <div className="space-y-1" key={key}>
-                      <NutrientRow
-                        goals={goals}
-                        intake={intake ?? undefined}
-                        itemKey={key}
-                        label={meta.label}
-                        onEdit={openEdit}
-                        value={{
-                          recommended: getClinicalValue(
-                            metrics,
-                            key as CanonicalNutrientKey,
-                          ),
-                          unit: meta.unit,
-                        }}
-                      />
-                      {HIERARCHY[key]?.map((childKey) => {
-                        const childMeta =
-                          NUTRIENT_REGISTRY[childKey as CanonicalNutrientKey];
-                        return (
-                          <div
-                            className="my-2 space-y-1 border-white/10 border-l pl-4"
-                            key={childKey}
-                          >
-                            <NutrientRow
-                              goals={goals}
-                              indent
-                              intake={intake ?? undefined}
-                              itemKey={childKey}
-                              label={childMeta.label}
-                              onEdit={openEdit}
-                              value={{
-                                recommended: getClinicalValue(
-                                  metrics,
-                                  childKey as CanonicalNutrientKey,
-                                ),
-                                unit: childMeta.unit,
-                              }}
-                            />
-                            {HIERARCHY[childKey]?.map((grandChildKey) => {
-                              const grandChildMeta =
-                                NUTRIENT_REGISTRY[
-                                  grandChildKey as CanonicalNutrientKey
-                                ];
-                              return (
-                                <div
-                                  className="ml-4 border-white/5 border-l pl-4"
-                                  key={grandChildKey}
-                                >
-                                  <NutrientRow
-                                    goals={goals}
-                                    indent
-                                    intake={intake ?? undefined}
-                                    itemKey={grandChildKey}
-                                    label={grandChildMeta.label}
-                                    onEdit={openEdit}
-                                    value={{
-                                      recommended: getClinicalValue(
-                                        metrics,
-                                        grandChildKey as CanonicalNutrientKey,
-                                      ),
-                                      unit: grandChildMeta.unit,
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </div>
-                        );
-                      })}
-                    </div>
+                  {sectionNutrients.map(([key]) => (
+                    <NutrientHierarchy
+                      key={key}
+                      goals={goals}
+                      intake={intake ?? undefined}
+                      itemKey={key}
+                      metrics={metrics}
+                      onEdit={openEdit}
+                    />
                   ))}
                 </div>
               </div>
@@ -263,7 +197,6 @@ export function NutritionTargets({
         )}
       </CardContent>
 
-      {/* Macro Editor Dialog */}
       <MacroEditor
         goals={goals}
         isOpen={macroEditorOpen}
@@ -272,7 +205,6 @@ export function NutritionTargets({
         onClose={() => setMacroEditorOpen(false)}
       />
 
-      {/* Individual Goal Editor Dialog */}
       <Dialog
         onOpenChange={(open) => !open && setEditingKey(null)}
         open={!!editingKey}

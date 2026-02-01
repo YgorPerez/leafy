@@ -347,7 +347,13 @@ export const NUTRIENT_REGISTRY = {
     label: "Total Fat",
     unit: "g",
     clinicalPath: "nutrients.fat.total",
-    aliases: ["fat", "Total lipid (fat)", "Total fat (NLEA)", "total fat"],
+    aliases: [
+      "fat",
+      "Total lipid (fat)",
+      "Total fat (NLEA)",
+      "total fat",
+      "FAT",
+    ],
     category: "macro",
   },
   fat_saturated: {
@@ -459,7 +465,12 @@ export const NUTRIENT_REGISTRY = {
     label: "Vitamin C",
     unit: "mg",
     clinicalPath: "nutrients.vitaminC",
-    aliases: ["vitamin-c", "Vitamin C, total ascorbic acid", "Vitamin C"],
+    aliases: [
+      "vitamin-c",
+      "Vitamin C, total ascorbic acid",
+      "Vitamin C",
+      "VITAMIN C",
+    ],
     category: "vitamin",
   },
   vitamin_d: {
@@ -480,7 +491,12 @@ export const NUTRIENT_REGISTRY = {
     label: "Vitamin K",
     unit: "mcg",
     clinicalPath: "nutrients.vitaminK",
-    aliases: ["vitamin-k", "Vitamin K (phylloquinone)", "Vitamin K"],
+    aliases: [
+      "vitamin-k",
+      "Vitamin K (phylloquinone)",
+      "Vitamin K",
+      "VITAMIN K",
+    ],
     category: "vitamin",
   },
   thiamin: {
@@ -652,6 +668,33 @@ export const NUTRIENT_REGISTRY = {
     clinicalPath: "nutrients.zinc",
     aliases: ["zinc", "Zinc, Zn"],
     category: "mineral",
+  },
+
+  // --- OTHERS / SPECIFIC CAROTENOIDS ---
+  beta_carotene: {
+    label: "Beta-carotene",
+    unit: "mcg",
+    clinicalPath: "nutrients.vitaminA", // Often contributes to Vit A
+    aliases: ["beta-carotene", "Carotene, beta", "Beta-carotene"],
+    category: "vitamin",
+  },
+  lycopene: {
+    label: "Lycopene",
+    unit: "mcg",
+    clinicalPath: "nutrients.other.lycopene",
+    aliases: ["lycopene", "Lycopene"],
+    category: "other",
+  },
+  lutein_zeaxanthin: {
+    label: "Lutein + Zeaxanthin",
+    unit: "mcg",
+    clinicalPath: "nutrients.other.luteinZeaxanthin",
+    aliases: [
+      "lutein_zeaxanthin",
+      "Lutein + zeaxanthin",
+      "Lutein + Zeaxanthin",
+    ],
+    category: "other",
   },
 } as const;
 

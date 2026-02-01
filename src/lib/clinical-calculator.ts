@@ -156,22 +156,71 @@ export const DRIMetricsSchema = z.object({
 
 export type DRIMetrics = z.infer<typeof DRIMetricsSchema>;
 
-const ACTIVITY_FACTORS = {
+// ─────────────────────────────────────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Activity levels and their corresponding TEE (Total Energy Expenditure) factors.
+ */
+export const ACTIVITY_FACTORS = {
   sedentary: 1.2,
   low: 1.375,
   active: 1.55,
   very_active: 1.725,
-};
+} as const;
 
+/**
+ * Acceptable Macronutrient Distribution Ranges (AMDR) constants.
+ */
+const AMDR = {
+  CARBS: { MIN: 0.45, MAX: 0.65 },
+  FAT: { MIN: 0.2, MAX: 0.35 },
+  PROTEIN: { BASE_RDA: 0.8, UPPER_LIMIT: 2.0 },
+} as const;
+
+/**
+ * Energy conversion factors (kcal/gram).
+ */
+const ENERGY_FACTORS = {
+  CARBS: 4,
+  PROTEIN: 4,
+  FAT: 9,
+} as const;
+
+/**
+ * WHO/FAO/UNU Amino Acid requirement guidelines (mg/kg body weight).
+ */
+const AMINO_ACID_GUIDELINES = {
+  CYSTINE: 4,
+  HISTIDINE: 10,
+  ISOLEUCINE: 20,
+  LEUCINE: 39,
+  LYSINE: 30,
+  METHIONINE: 10,
+  PHENYLALANINE: 25,
+  THREONINE: 15,
+  TRYPTOPHAN: 4,
+  TYROSINE: 25,
+  VALINE: 26,
+} as const;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Calculation Logic
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Calculates Dietary Reference Intakes (DRI) based on user profile.
+ * Uses Mifflin-St Jeor equation for BMR and WHO/USDA guidelines for nutrients.
+ */
 export function calculateDRI(profile: UserProfile): DRIMetrics {
   const { sex, age, weight, height, activityLevel } = profile;
   const isMale = sex === "male";
 
-  // 1. BMI
-  // weight (kg) / height (m)^2
+  // 1. BMI: weight (kg) / height (m)^2
   const bmi = weight / Math.pow(height / 100, 2);
 
-  // 2. BMR - Mifflin-St Jeor
+  // 2. BMR - Mifflin-St Jeor Equation
   let bmr = 10 * weight + 6.25 * height - 5 * age;
   if (isMale) {
     bmr += 5;
@@ -179,23 +228,21 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
     bmr -= 161;
   }
 
-  // 3. TEE
+  // 3. TEE - Total Energy Expenditure
   const tee = bmr * (ACTIVITY_FACTORS[activityLevel] || 1.2);
 
-  // Macronutrients (Ranges based on AMDR: Carbs 45-65%, Fat 20-35%, Protein 10-35%)
-  // 1g carb = 4kcal, 1g protein = 4kcal, 1g fat = 9kcal
-  const carbMin = (tee * 0.45) / 4;
-  const carbMax = (tee * 0.65) / 4;
-  const fatMin = (tee * 0.2) / 9;
-  const fatMax = (tee * 0.35) / 9;
-  const proteinRDA = weight * 0.8; // Baseline RDA (0.8g/kg)
+  // 4. Macronutrient Ranges (based on AMDR)
+  const carbMin = (tee * AMDR.CARBS.MIN) / ENERGY_FACTORS.CARBS;
+  const carbMax = (tee * AMDR.CARBS.MAX) / ENERGY_FACTORS.CARBS;
+  const fatMin = (tee * AMDR.FAT.MIN) / ENERGY_FACTORS.FAT;
+  const fatMax = (tee * AMDR.FAT.MAX) / ENERGY_FACTORS.FAT;
+  const proteinRDA = weight * AMDR.PROTEIN.BASE_RDA;
 
-  // Water (AI) - converted to ml
+  // 5. Water (AI) - converted to ml
   const water = isMale ? 3700 : 2700;
 
-  // Helper for amino acid calculation (mg/kg body weight)
-  // Values based on WHO/FAO/UNU Expert Consultation
-  const aa = (mgPerKg: number) =>
+  // Helper for amino acid calculation (mg/kg body weight -> g/day)
+  const calculateAA = (mgPerKg: number) =>
     Math.round(((mgPerKg * weight) / 1000) * 10) / 10;
 
   return {
@@ -215,22 +262,21 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
         starch: { recommended: 0, unit: "g", note: "Complex carbs preferred" },
         fiber: {
           total: { recommended: isMale ? 38 : 25, unit: "g" },
-          soluble: { recommended: isMale ? 8 : 6, unit: "g" }, // Roughly 1/4 of total
+          soluble: { recommended: isMale ? 8 : 6, unit: "g" },
           insoluble: { recommended: isMale ? 30 : 19, unit: "g" },
         },
         sugar: {
           total: {
-            recommended: Math.round((tee * 0.1) / 4), // WHO guidelines < 10% energy
+            recommended: Math.round((tee * 0.1) / ENERGY_FACTORS.CARBS), // WHO < 10%
             unit: "g",
             note: "Limit intake",
           },
           added: {
-            recommended: Math.round((tee * 0.05) / 4), // WHO optimal < 5% energy
+            recommended: Math.round((tee * 0.05) / ENERGY_FACTORS.CARBS), // WHO < 5%
             unit: "g",
             note: "Limit to <5-10% of total calories",
           },
           alcohol: { recommended: 0, unit: "g", note: "Limit if sensitive" },
-          // Specific Sugars - no specific biological requirement, keeping 0 but with unit
           fructose: { recommended: 0, unit: "g" },
           sucrose: { recommended: 0, unit: "g" },
           lactose: { recommended: 0, unit: "g" },
@@ -244,39 +290,66 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
         total: {
           recommended: Math.round(proteinRDA),
           min: Math.round(proteinRDA),
-          max: Math.round(weight * 2.0), // General upper safety limit for active
+          max: Math.round(weight * AMDR.PROTEIN.UPPER_LIMIT),
           unit: "g",
         },
-        // Amino Acids (g/day based on weight)
-        // WHO 2007 requirements
-        alanine: { recommended: 0, unit: "g" }, // Non-essential
-        arginine: { recommended: 0, unit: "g" }, // Conditional
-        asparticAcid: { recommended: 0, unit: "g" }, // Non-essential
+        alanine: { recommended: 0, unit: "g" },
+        arginine: { recommended: 0, unit: "g" },
+        asparticAcid: { recommended: 0, unit: "g" },
         cystine: {
-          recommended: aa(4),
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.CYSTINE),
           unit: "g",
           note: "TSAA (Met+Cys) ~15mg/kg",
-        }, // Part of TSAA
+        },
         glutamicAcid: { recommended: 0, unit: "g" },
         glutamine: { recommended: 0, unit: "g" },
         glycine: { recommended: 0, unit: "g" },
-        histidine: { recommended: aa(10), unit: "g" },
+        histidine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.HISTIDINE),
+          unit: "g",
+        },
         hydroxyproline: { recommended: 0, unit: "g" },
-        isoleucine: { recommended: aa(20), unit: "g" },
-        leucine: { recommended: aa(39), unit: "g" },
-        lysine: { recommended: aa(30), unit: "g" },
-        methionine: { recommended: aa(10), unit: "g", note: "~10-15mg/kg" },
+        isoleucine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.ISOLEUCINE),
+          unit: "g",
+        },
+        leucine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.LEUCINE),
+          unit: "g",
+        },
+        lysine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.LYSINE),
+          unit: "g",
+        },
+        methionine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.METHIONINE),
+          unit: "g",
+          note: "~10-15mg/kg",
+        },
         phenylalanine: {
-          recommended: aa(25),
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.PHENYLALANINE),
           unit: "g",
           note: "Phe+Tyr ~25mg/kg",
         },
         proline: { recommended: 0, unit: "g" },
         serine: { recommended: 0, unit: "g" },
-        threonine: { recommended: aa(15), unit: "g" },
-        tryptophan: { recommended: aa(4), unit: "g" },
-        tyrosine: { recommended: aa(25), unit: "g", note: "Phe+Tyr total" },
-        valine: { recommended: aa(26), unit: "g" },
+        threonine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.THREONINE),
+          unit: "g",
+        },
+        tryptophan: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.TRYPTOPHAN),
+          unit: "g",
+        },
+        tyrosine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.TYROSINE),
+          unit: "g",
+          note: "Phe+Tyr total",
+        },
+        valine: {
+          recommended: calculateAA(AMINO_ACID_GUIDELINES.VALINE),
+          unit: "g",
+        },
       },
 
       fat: {
@@ -287,25 +360,24 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
           unit: "g",
         },
         saturated: {
-          recommended: Math.round((tee * 0.1) / 9),
+          recommended: Math.round((tee * 0.1) / ENERGY_FACTORS.FAT),
           unit: "g",
           note: "Limit to <10% calories",
         },
         trans: {
-          recommended: Math.round((tee * 0.01) / 9),
+          recommended: Math.round((tee * 0.01) / ENERGY_FACTORS.FAT),
           unit: "g",
           note: "As low as possible (<1%)",
         },
         monounsaturated: {
-          recommended: Math.round((tee * 0.15) / 9), // Remainder of fat allowance roughly
+          recommended: Math.round((tee * 0.15) / ENERGY_FACTORS.FAT),
           unit: "g",
         },
         polyunsaturated: {
-          recommended: Math.round((tee * 0.1) / 9),
+          recommended: Math.round((tee * 0.1) / ENERGY_FACTORS.FAT),
           unit: "g",
         },
         omega3: { recommended: isMale ? 1.6 : 1.1, unit: "g" },
-        // Linoleic Acid is Omega-6
         omega6: { recommended: isMale ? 17 : 12, unit: "g" },
         cholesterol: {
           recommended: 300,
@@ -356,7 +428,7 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
       },
       manganese: { recommended: isMale ? 2.3 : 1.8, unit: "mg", ul: 11 },
       molybdenum: { recommended: 45, unit: "mcg", ul: 2000 },
-      phosphorus: { recommended: 700, unit: "mg", ul: 4000 }, // Corrected 0.7g to 700mg for consistency
+      phosphorus: { recommended: 700, unit: "mg", ul: 4000 },
       potassium: { recommended: isMale ? 3400 : 2600, unit: "mg", ul: "ND" },
       selenium: { recommended: 55, unit: "mcg", ul: 400 },
       sodium: { recommended: 1500, unit: "mg", ul: 2300 },
