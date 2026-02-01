@@ -18,6 +18,7 @@ type RouterInputs = inferRouterInputs<AppRouter>;
  */
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
-export { type AppRouter, appRouter } from "./root";
+export { appRouter, createCaller, type AppRouter } from "./root";
+export * from "./router/food.schema";
 export { createTRPCContext } from "./trpc";
 export type { RouterInputs, RouterOutputs };

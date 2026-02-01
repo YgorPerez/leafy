@@ -1,0 +1,33 @@
+- [ ] Change the tech stack, react native, expo, zustand, trpc, flashlist, react-native-mmkv, convex, tanstack-form, reactnativereusables, uniwind, drizzle, duckdb, reactotron, keep it working for web too
+
+- [ ] I should be able to click in any nutrient goal and see how todays foods are contributing to it
+- [ ] [Menus and sections](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/menus-and-sections.md)
+- [ ] [UI Revamp](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/ui-revamp.md)
+- [ ] [Onboarding flow](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/onboarding-flow.md)
+- [ ] [Widgets dashboard](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/widgets-dashboard.md)
+- [ ] [Day management](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/day-management.md)
+- [ ] [Meal grouping and DIASS](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/meal-grouping.md)
+- [ ] Add food suggestions for each nutrient
+- [ ] Daily dozen 21 tweaks tracking
+- [ ] Single add option, that will always open the details dialog and let the user log the food there
+- [ ] Save recent searchs
+- [ ] Add favorite foods
+- [ ] Add weight logging
+- [ ] Add activity logging
+- [ ] Add custom foods, the user will be able to set the name, serving size, macros breakdown, TEF,all nutrients etc
+- [ ] Add sleep logging
+- [ ] Body fat logging, adipometer, bioelectrical impedance, dexa scan etc
+- [ ] Add meals (breakfast, lunch, dinner, snacks, custom)
+- [ ] Add custom recipes (proportions of multiple foods to make logging easier)
+- [ ] Edit foods logged and see its details
+- [ ] Add energy expedinture breakdown, TEF (Thermic Effect of Food), BMR (Basal Metabolic Rate), NEET (Non-Exercise Activity Thermogenesis), exercises, etc
+- [ ] Add daily dozen foods picking, where for each of the 12 types the user will what foods of that category he is going to eats
+- [ ] Daily dozen tracking
+- [ ] Week meals planning
+- [ ] How to cook recipes
+- [ ] Add filtering options to searches, like vegetarian, vegan, data source, restaurant, beverage, etcs
+- [ ] Allergies tags
+- [ ] Add labs exams (biometrics) logging, colesterol, ldl, hdl, triglycerides, etc
+- [ ] Custom good and bad habit tracking
+- [ ] Weight loss predictions
+- [ ] Add water tracking
