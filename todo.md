@@ -1,5 +1,3 @@
-- [ ] Fix code smells
-- [ ] Add links to get the database sources
 - [ ] Change the tech stack, react native, expo, zustand, trpc, flashlist, react-native-mmkv, convex, tanstack-form, reactnativereusables, uniwind, drizzle, duckdb, sql lite, reactotron, keep it working for web too
 
 - [ ] I should be able to click in any nutrient goal and see how todays foods are contributing to it
