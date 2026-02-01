@@ -21,7 +21,14 @@ import { type DRIMetrics } from "~/lib/clinical-calculator";
 interface DashboardProps {
   metrics: DRIMetrics | null;
   customGoals?: Record<string, { target?: number; min?: number; max?: number }>;
-  session: any;
+  session: {
+    user: {
+      id: string;
+      name?: string | null;
+      email: string;
+      image?: string | null;
+    };
+  } | null;
 }
 
 export function Dashboard({ metrics, customGoals, session }: DashboardProps) {

@@ -35,7 +35,11 @@ export default async function Home() {
         age,
         weight: dbUser.weight,
         height: dbUser.height,
-        activityLevel: dbUser.activityLevel as any,
+        activityLevel: dbUser.activityLevel as
+          | "sedentary"
+          | "low"
+          | "active"
+          | "very_active",
       };
       metrics = calculateDRI(profile);
     }

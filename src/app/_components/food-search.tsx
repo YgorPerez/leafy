@@ -249,7 +249,15 @@ export function FoodSearch({ date }: { date: Date }) {
                 foodCode: item.food.code!,
                 foodName: item.food.product_name || "Unknown",
                 foodBrand: item.food.brands,
-                source: item.food.source as any,
+                source: item.food.source as
+                  | "NCCDB"
+                  | "USDA"
+                  | "CNF"
+                  | "IFCDB"
+                  | "Branded"
+                  | "User"
+                  | "Foundation"
+                  | undefined,
                 quantity: item.quantity,
                 unit: item.unit,
               })),

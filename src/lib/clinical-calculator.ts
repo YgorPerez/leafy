@@ -1,131 +1,160 @@
-export type UserProfile = {
-  sex: "male" | "female";
-  age: number; // Years
-  weight: number; // kg
-  height: number; // cm
-  activityLevel: "sedentary" | "low" | "active" | "very_active";
-};
+import { z } from "zod";
 
-export type Unit = "mg" | "g" | "mcg" | "L" | "ml" | "kcal" | "IU" | "NA";
+export const UserProfileSchema = z.object({
+  sex: z.enum(["male", "female"]),
+  age: z.number().describe("Years"),
+  weight: z.number().describe("kg"),
+  height: z.number().describe("cm"),
+  activityLevel: z.enum(["sedentary", "low", "active", "very_active"]),
+});
 
-export type NutrientValue = {
+export type UserProfile = z.infer<typeof UserProfileSchema>;
+
+export const UnitSchema = z.enum([
+  "mg",
+  "g",
+  "mcg",
+  "L",
+  "ml",
+  "kcal",
+  "IU",
+  "NA",
+]);
+export type Unit = z.infer<typeof UnitSchema>;
+
+export const NutrientValueSchema = z.object({
+  recommended: z.number(),
+  unit: UnitSchema,
+  ul: z
+    .union([z.number(), z.string()])
+    .optional()
+    .describe("Tolerable Upper Intake Level, string for 'ND'"),
+  min: z.number().optional(),
+  max: z.number().optional(),
+  note: z.string().optional(),
+});
+
+export type NutrientValue = z.infer<typeof NutrientValueSchema>;
+
+/**
+ * Simplified nutrient value reference for UI editing
+ */
+export type NutrientValueRef = {
   recommended: number;
-  unit: Unit;
-  ul?: number | string; // Tolerable Upper Intake Level, string for "ND"
-  min?: number;
-  max?: number;
-  note?: string;
+  unit: string;
 };
 
-export type DRIMetrics = {
-  bmr: number;
-  tee: number;
-  bmi: number;
-  weight: number;
-  nutrients: {
+export const DRIMetricsSchema = z.object({
+  bmr: z.number(),
+  tee: z.number(),
+  bmi: z.number(),
+  weight: z.number(),
+  nutrients: z.object({
     // Macronutrients
-    carbohydrate: {
-      total: NutrientValue;
-      starch: NutrientValue;
-      fiber: {
-        total: NutrientValue;
-        soluble: NutrientValue;
-        insoluble: NutrientValue;
-      };
-      sugar: {
-        total: NutrientValue;
-        added: NutrientValue;
-        alcohol: NutrientValue;
+    carbohydrate: z.object({
+      total: NutrientValueSchema,
+      starch: NutrientValueSchema,
+      fiber: z.object({
+        total: NutrientValueSchema,
+        soluble: NutrientValueSchema,
+        insoluble: NutrientValueSchema,
+      }),
+      sugar: z.object({
+        total: NutrientValueSchema,
+        added: NutrientValueSchema,
+        alcohol: NutrientValueSchema,
         // Specific Sugars
-        fructose: NutrientValue;
-        sucrose: NutrientValue;
-        lactose: NutrientValue;
-        glucose: NutrientValue;
-        maltose: NutrientValue;
-        galactose: NutrientValue;
-      };
-    };
+        fructose: NutrientValueSchema,
+        sucrose: NutrientValueSchema,
+        lactose: NutrientValueSchema,
+        glucose: NutrientValueSchema,
+        maltose: NutrientValueSchema,
+        galactose: NutrientValueSchema,
+      }),
+    }),
 
-    protein: {
-      total: NutrientValue;
+    protein: z.object({
+      total: NutrientValueSchema,
       // Amino Acids
-      alanine: NutrientValue;
-      arginine: NutrientValue;
-      asparticAcid: NutrientValue;
-      cystine: NutrientValue;
-      glutamicAcid: NutrientValue;
-      glutamine: NutrientValue;
-      glycine: NutrientValue;
-      histidine: NutrientValue;
-      hydroxyproline: NutrientValue;
-      isoleucine: NutrientValue;
-      leucine: NutrientValue;
-      lysine: NutrientValue;
-      methionine: NutrientValue;
-      phenylalanine: NutrientValue;
-      proline: NutrientValue;
-      serine: NutrientValue;
-      threonine: NutrientValue;
-      tryptophan: NutrientValue;
-      tyrosine: NutrientValue;
-      valine: NutrientValue;
-    };
+      alanine: NutrientValueSchema,
+      arginine: NutrientValueSchema,
+      asparticAcid: NutrientValueSchema,
+      cystine: NutrientValueSchema,
+      glutamicAcid: NutrientValueSchema,
+      glutamine: NutrientValueSchema,
+      glycine: NutrientValueSchema,
+      histidine: NutrientValueSchema,
+      hydroxyproline: NutrientValueSchema,
+      isoleucine: NutrientValueSchema,
+      leucine: NutrientValueSchema,
+      lysine: NutrientValueSchema,
+      methionine: NutrientValueSchema,
+      phenylalanine: NutrientValueSchema,
+      proline: NutrientValueSchema,
+      serine: NutrientValueSchema,
+      threonine: NutrientValueSchema,
+      tryptophan: NutrientValueSchema,
+      tyrosine: NutrientValueSchema,
+      valine: NutrientValueSchema,
+    }),
 
-    fat: {
-      total: NutrientValue;
-      saturated: NutrientValue;
-      trans: NutrientValue;
-      monounsaturated: NutrientValue;
-      polyunsaturated: NutrientValue;
-      omega3: NutrientValue;
-      omega6: NutrientValue;
-      cholesterol: NutrientValue;
-    };
-    water: NutrientValue;
+    fat: z.object({
+      total: NutrientValueSchema,
+      saturated: NutrientValueSchema,
+      trans: NutrientValueSchema,
+      monounsaturated: NutrientValueSchema,
+      polyunsaturated: NutrientValueSchema,
+      omega3: NutrientValueSchema,
+      omega6: NutrientValueSchema,
+      cholesterol: NutrientValueSchema,
+    }),
+    water: NutrientValueSchema,
 
     // Vitamins
-    vitaminA: NutrientValue;
-    vitaminC: NutrientValue;
-    vitaminD: NutrientValue;
-    vitaminE: NutrientValue;
-    vitaminK: NutrientValue;
-    thiamin: NutrientValue;
-    riboflavin: NutrientValue;
-    niacin: NutrientValue;
-    vitaminB6: NutrientValue;
-    folate: NutrientValue;
-    vitaminB12: NutrientValue;
-    choline: NutrientValue;
-    pantothenicAcid: NutrientValue;
-    biotin: NutrientValue;
-    carotenoids: NutrientValue;
+    vitaminA: NutrientValueSchema,
+    vitaminC: NutrientValueSchema,
+    vitaminD: NutrientValueSchema,
+    vitaminE: NutrientValueSchema,
+    vitaminK: NutrientValueSchema,
+    thiamin: NutrientValueSchema,
+    riboflavin: NutrientValueSchema,
+    niacin: NutrientValueSchema,
+    vitaminB6: NutrientValueSchema,
+    folate: NutrientValueSchema,
+    vitaminB12: NutrientValueSchema,
+    choline: NutrientValueSchema,
+    pantothenicAcid: NutrientValueSchema,
+    biotin: NutrientValueSchema,
+    carotenoids: NutrientValueSchema,
 
     // Essential Minerals
-    calcium: NutrientValue;
-    chloride: NutrientValue;
-    chromium: NutrientValue;
-    copper: NutrientValue;
-    fluoride: NutrientValue;
-    iodine: NutrientValue;
-    iron: NutrientValue;
-    magnesium: NutrientValue;
-    manganese: NutrientValue;
-    molybdenum: NutrientValue;
-    phosphorus: NutrientValue;
-    potassium: NutrientValue;
-    selenium: NutrientValue;
-    sodium: NutrientValue;
-    zinc: NutrientValue;
+    calcium: NutrientValueSchema,
+    chloride: NutrientValueSchema,
+    chromium: NutrientValueSchema,
+    copper: NutrientValueSchema,
+    fluoride: NutrientValueSchema,
+    iodine: NutrientValueSchema,
+    iron: NutrientValueSchema,
+    magnesium: NutrientValueSchema,
+    manganese: NutrientValueSchema,
+    molybdenum: NutrientValueSchema,
+    phosphorus: NutrientValueSchema,
+    potassium: NutrientValueSchema,
+    selenium: NutrientValueSchema,
+    sodium: NutrientValueSchema,
+    zinc: NutrientValueSchema,
 
     // Non-Essential Minerals
-    arsenic: NutrientValue;
-    boron: NutrientValue;
-    nickel: NutrientValue;
-    silicon: NutrientValue;
-    sulfate: NutrientValue;
-    vanadium: NutrientValue;
-  };
-};
+    arsenic: NutrientValueSchema,
+    boron: NutrientValueSchema,
+    nickel: NutrientValueSchema,
+    silicon: NutrientValueSchema,
+    sulfate: NutrientValueSchema,
+    vanadium: NutrientValueSchema,
+  }),
+});
+
+export type DRIMetrics = z.infer<typeof DRIMetricsSchema>;
 
 const ACTIVITY_FACTORS = {
   sedentary: 1.2,

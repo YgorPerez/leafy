@@ -1,9 +1,10 @@
 "use client";
 
 import { Edit2 } from "lucide-react";
-import type { Goal } from "~/app/_hooks/use-nutrition-goals";
+import { type Goal } from "~/app/_hooks/use-nutrition-goals";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
+import { type NutrientValueRef } from "~/lib/clinical-calculator";
 import { normalizeToCanonicalKey } from "~/lib/nutrients/registry";
 import { cn } from "~/lib/utils";
 
@@ -14,7 +15,7 @@ interface NutrientRowProps {
   goals: Record<string, Goal>;
   intake?: Record<string, number>;
   indent?: boolean;
-  onEdit: (key: string, currentGoal: Goal, refVal: any) => void;
+  onEdit: (key: string, currentGoal: Goal, refVal: NutrientValueRef) => void;
 }
 
 export function NutrientRow({
@@ -75,7 +76,9 @@ export function NutrientRow({
           )}
           <Button
             className="h-6 w-6 text-muted-foreground opacity-0 transition-all hover:bg-primary/10 hover:text-primary group-hover/row:opacity-100"
-            onClick={() => onEdit(itemKey, currentGoal, value)}
+            onClick={() =>
+              onEdit(itemKey, currentGoal, value as NutrientValueRef)
+            }
             size="icon"
             variant="ghost"
           >

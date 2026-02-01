@@ -1,23 +1,33 @@
+import { z } from "zod";
 import type { DRIMetrics } from "~/lib/clinical-calculator";
 
-export type NutrientCategory =
-  | "macro"
-  | "vitamin"
-  | "mineral"
-  | "other"
-  | "amino_acid";
+export const NutrientCategorySchema = z.enum([
+  "macro",
+  "vitamin",
+  "mineral",
+  "other",
+  "amino_acid",
+]);
+export type NutrientCategory = z.infer<typeof NutrientCategorySchema>;
 
 /**
- * Nutrient Registry metadata structure
+ * Nutrient Registry metadata schema
  */
-export interface NutrientMetadata {
-  label: string;
-  unit: string;
-  clinicalPath: string; // Using string dot-notation for path lookup
-  aliases: string[];
-  category: NutrientCategory;
-  parent?: string; // Using string to avoid circular reference in const definition
-}
+export const NutrientMetadataSchema = z.object({
+  label: z.string(),
+  unit: z.string(),
+  clinicalPath: z
+    .string()
+    .describe("Using string dot-notation for path lookup"),
+  aliases: z.array(z.string()).or(z.array(z.string()).readonly()),
+  category: NutrientCategorySchema,
+  parent: z
+    .string()
+    .optional()
+    .describe("Using string to avoid circular reference in const definition"),
+});
+
+export type NutrientMetadata = z.infer<typeof NutrientMetadataSchema>;
 
 /**
  * Nutrient Registry
@@ -747,7 +757,10 @@ export function getClinicalValue(
   metrics: DRIMetrics,
   key: CanonicalNutrientKey,
 ): number | null {
-  const path = NUTRIENT_REGISTRY[key].clinicalPath;
+  const metadata = NUTRIENT_REGISTRY[key];
+  if (!metadata || !("clinicalPath" in metadata)) return null;
+
+  const path = (metadata as unknown as NutrientMetadata).clinicalPath;
   if (!path) return null;
 
   // Direct path for tee
@@ -756,6 +769,7 @@ export function getClinicalValue(
   // Nested path lookup
   const parts = path.split(".");
   let current: unknown = metrics;
+
   for (const part of parts) {
     if (current && typeof current === "object" && part in current) {
       current = (current as Record<string, unknown>)[part];

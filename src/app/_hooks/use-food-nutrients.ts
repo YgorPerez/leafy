@@ -26,8 +26,13 @@ export function useFoodNutrients(
     return food.nutriments
       .map((n) => {
         const rawValue = n["100g"] ?? n.value ?? 0;
-        const key = n.name as CanonicalNutrientKey;
-        const metadata = NUTRIENT_REGISTRY[key];
+        const potentialKey = n.name as string;
+        const key =
+          potentialKey in NUTRIENT_REGISTRY
+            ? (potentialKey as CanonicalNutrientKey)
+            : undefined;
+
+        const metadata = key ? NUTRIENT_REGISTRY[key] : null;
 
         const targetUnit = metadata?.unit || n.unit || "g";
         const scaledValue = Number(rawValue) * scalingFactor;

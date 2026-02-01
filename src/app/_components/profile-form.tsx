@@ -52,7 +52,11 @@ export function ProfileForm({ onSuccess }: { onSuccess?: () => void }) {
       birthDate: new Date(birthDate),
       weight: parseFloat(weight),
       height: parseFloat(height),
-      activityLevel: activityLevel as any,
+      activityLevel: activityLevel as
+        | "sedentary"
+        | "low"
+        | "active"
+        | "very_active",
     });
   };
 

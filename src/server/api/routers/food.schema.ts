@@ -27,7 +27,6 @@ export type FoodSource = (typeof FOOD_SOURCES)[number];
 
 /** Zod schema for food source validation */
 export const FoodSourceSchema = z.enum(FOOD_SOURCES);
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Data Source Selection
 // ─────────────────────────────────────────────────────────────────────────────
@@ -277,8 +276,8 @@ export const FoundationFoodSchema = z.object({
   description: z.string(),
   foodNutrients: z.array(FoundationFoodNutrientSchema),
   scientificName: z.string().optional().nullable(),
-  foodAttributes: z.array(z.any()).optional().nullable(),
-  nutrientConversionFactors: z.array(z.any()).optional().nullable(),
+  foodAttributes: z.array(z.unknown()).optional().nullable(),
+  nutrientConversionFactors: z.array(z.unknown()).optional().nullable(),
   isHistoricalReference: z.boolean().optional().nullable(),
   ndbNumber: z.number().optional().nullable(),
   fdcId: z.number(),
@@ -286,7 +285,7 @@ export const FoundationFoodSchema = z.object({
   foodCategory: FoundationFoodCategorySchema.optional().nullable(),
   foodPortions: z.array(FoundationFoodPortionSchema).optional().nullable(),
   publicationDate: z.string().optional().nullable(),
-  inputFoods: z.array(z.any()).optional().nullable(),
+  inputFoods: z.array(z.unknown()).optional().nullable(),
 });
 
 /** Search input schema with data source selection */

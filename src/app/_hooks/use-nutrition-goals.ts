@@ -10,25 +10,32 @@ import {
 } from "~/lib/nutrients/registry";
 import { api } from "~/trpc/react";
 
-export type Goal = {
-  target?: number;
-  min?: number;
-  max?: number;
-};
+import { z } from "zod";
+
+export const GoalSchema = z.object({
+  target: z.number().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
+});
+
+export type Goal = z.infer<typeof GoalSchema>;
 
 // Derived from Registry
 export const PARENT_MAP: Record<string, string> = {};
 export const HIERARCHY: Record<string, string[]> = {};
 
-(Object.entries(NUTRIENT_REGISTRY) as [CanonicalNutrientKey, any][]).forEach(
-  ([key, meta]) => {
-    if (meta.parent) {
-      PARENT_MAP[key] = meta.parent;
-      if (!HIERARCHY[meta.parent]) HIERARCHY[meta.parent] = [];
-      HIERARCHY[meta.parent]!.push(key);
-    }
-  },
-);
+(
+  Object.entries(NUTRIENT_REGISTRY) as [
+    CanonicalNutrientKey,
+    (typeof NUTRIENT_REGISTRY)[CanonicalNutrientKey],
+  ][]
+).forEach(([key, meta]) => {
+  if ("parent" in meta && meta.parent) {
+    PARENT_MAP[key] = meta.parent;
+    if (!HIERARCHY[meta.parent]) HIERARCHY[meta.parent] = [];
+    HIERARCHY[meta.parent]!.push(key);
+  }
+});
 
 export function useNutritionGoals(
   metrics: DRIMetrics,

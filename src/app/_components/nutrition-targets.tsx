@@ -24,11 +24,13 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import type { DRIMetrics } from "~/lib/clinical-calculator";
+import { type NutrientValueRef } from "~/lib/clinical-calculator";
 import {
   type CanonicalNutrientKey,
   getClinicalValue,
   NUTRIENT_REGISTRY,
   type NutrientCategory,
+  type NutrientMetadata,
 } from "~/lib/nutrients/registry";
 import { api } from "~/trpc/react";
 import { BodyCompositionCard } from "./nutrition/body-composition-card";
@@ -62,17 +64,21 @@ export function NutritionTargets({
     min: string;
     max: string;
   }>({ target: "", min: "", max: "" });
-  const [systemRef, setSystemRef] = useState<any>(null);
+  const [systemRef, setSystemRef] = useState<NutrientValueRef | null>(null);
   const [macroEditorOpen, setMacroEditorOpen] = useState(false);
 
-  const openEdit = (key: string, currentVal: Goal, refVal?: any) => {
+  const openEdit = (
+    key: string,
+    currentVal: Goal,
+    refVal?: NutrientValueRef,
+  ) => {
     setEditingKey(key);
     setEditState({
       target: currentVal.target?.toString() ?? "",
       min: currentVal.min?.toString() ?? "",
       max: currentVal.max?.toString() ?? "",
     });
-    setSystemRef(refVal);
+    setSystemRef(refVal ?? null);
   };
 
   const handleSave = () => {
@@ -136,7 +142,7 @@ export function NutritionTargets({
             }
           />
           <EnergyCard
-            intake={intake?.energy_kcal || 0}
+            intake={intake?.["energy_kcal"] || 0}
             target={goals["energy"]?.target ?? metrics.tee}
             onEdit={() =>
               openEdit("energy", goals["energy"] || {}, {
@@ -151,7 +157,10 @@ export function NutritionTargets({
         {(["macro", "vitamin", "mineral"] as NutrientCategory[]).map(
           (category) => {
             const sectionNutrients = (
-              Object.entries(NUTRIENT_REGISTRY) as [CanonicalNutrientKey, any][]
+              Object.entries(NUTRIENT_REGISTRY) as [
+                CanonicalNutrientKey,
+                NutrientMetadata,
+              ][]
             ).filter(([_, meta]) => meta.category === category && !meta.parent);
 
             if (sectionNutrients.length === 0) return null;
@@ -192,7 +201,8 @@ export function NutritionTargets({
                         }}
                       />
                       {HIERARCHY[key]?.map((childKey) => {
-                        const childMeta = (NUTRIENT_REGISTRY as any)[childKey];
+                        const childMeta =
+                          NUTRIENT_REGISTRY[childKey as CanonicalNutrientKey];
                         return (
                           <div
                             className="my-2 space-y-1 border-white/10 border-l pl-4"
@@ -214,9 +224,10 @@ export function NutritionTargets({
                               }}
                             />
                             {HIERARCHY[childKey]?.map((grandChildKey) => {
-                              const grandChildMeta = (NUTRIENT_REGISTRY as any)[
-                                grandChildKey
-                              ];
+                              const grandChildMeta =
+                                NUTRIENT_REGISTRY[
+                                  grandChildKey as CanonicalNutrientKey
+                                ];
                               return (
                                 <div
                                   className="ml-4 border-white/5 border-l pl-4"

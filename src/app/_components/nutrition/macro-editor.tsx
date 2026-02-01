@@ -73,22 +73,25 @@ export function MacroEditor({
     if (base === "energy" || base === "pct") {
       if (base === "pct" && changedField) {
         const keys = ["carbs", "protein", "fat"] as const;
+        type MacroField = (typeof keys)[number];
         const others = keys.filter((k) => k !== changedField);
-        const changedVal = (next as any)[changedField].pct;
+        const changedVal = next[changedField as MacroField].pct;
         const remaining = 100 - changedVal;
 
         // Adjust others proportionally
         const currentOthersTotal =
-          (state as any)[others[0]!].pct + (state as any)[others[1]!].pct;
+          state[others[0] as MacroField].pct +
+          state[others[1] as MacroField].pct;
         if (currentOthersTotal > 0) {
-          (next as any)[others[0]!].pct = Math.round(
-            ((state as any)[others[0]!].pct / currentOthersTotal) * remaining,
+          next[others[0] as MacroField].pct = Math.round(
+            (state[others[0] as MacroField].pct / currentOthersTotal) *
+              remaining,
           );
         } else {
-          (next as any)[others[0]!].pct = Math.floor(remaining / 2);
+          next[others[0] as MacroField].pct = Math.floor(remaining / 2);
         }
-        (next as any)[others[1]!].pct =
-          100 - changedVal - (next as any)[others[0]!].pct;
+        next[others[1] as MacroField].pct =
+          100 - changedVal - next[others[0] as MacroField].pct;
       }
 
       next.carbs.g = Math.round((energy * (next.carbs.pct / 100)) / 4);
