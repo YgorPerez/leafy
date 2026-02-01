@@ -218,7 +218,10 @@ export function NutritionTargets({
           <div className="space-y-6 pt-4">
             <div className="space-y-2">
               <Label className="text-muted-foreground text-xs uppercase tracking-widest">
-                {editingKey} Target
+                {editingKey &&
+                  NUTRIENT_REGISTRY[editingKey as CanonicalNutrientKey]
+                    ?.label}{" "}
+                Target
               </Label>
               <div className="flex items-center gap-3">
                 <Input

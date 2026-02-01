@@ -115,7 +115,7 @@ export function mapFoundationToSearchResult(
   };
 }
 
-import { normalizeNutrientKey } from "../food.utils";
+import { normalizeToCanonicalKey } from "~/lib/nutrients/registry";
 
 /**
  * Map a foundation food nutrient to the common nutriment format.
@@ -124,7 +124,7 @@ function mapFoundationNutrientToNutriment(
   nutrient: FoundationFood["foodNutrients"][number],
 ): Nutriment {
   const name =
-    normalizeNutrientKey(nutrient.nutrient.name) ?? nutrient.nutrient.name;
+    normalizeToCanonicalKey(nutrient.nutrient.name) ?? nutrient.nutrient.name;
 
   return {
     name,

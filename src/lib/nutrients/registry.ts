@@ -756,6 +756,13 @@ export const BASE_CONVERSIONS: Record<string, number> = {
   µg: 0.000001,
   kg: 1000,
   kilogram: 1000,
+  // Other mass units (to grams)
+  oz: 28.35,
+  ounce: 28.35,
+  ounces: 28.35,
+  lb: 453.592,
+  pound: 453.592,
+  pounds: 453.592,
   // Volume to milliliters
   ml: 1,
   milliliter: 1,
@@ -763,6 +770,10 @@ export const BASE_CONVERSIONS: Record<string, number> = {
   l: 1000,
   liter: 1000,
   liters: 1000,
+  // Approximate volume to mass (for water-based items)
+  cup: 236.588,
+  tbsp: 14.787,
+  tsp: 4.929,
 };
 
 /**

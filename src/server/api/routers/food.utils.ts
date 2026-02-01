@@ -1,41 +1,11 @@
 import type { FoodProduct, FoodSearchResult, Nutriment } from "./food.schema";
 
 import {
+  BASE_CONVERSIONS,
   convertNutrientValue,
   normalizeToCanonicalKey,
   NUTRIENT_REGISTRY,
-  type CanonicalNutrientKey,
 } from "~/lib/nutrients/registry";
-
-/**
- * Normalizes a nutrient key from various formats to our clinical schema format.
- */
-export function normalizeNutrientKey(
-  key: string,
-): CanonicalNutrientKey | undefined {
-  return normalizeToCanonicalKey(key);
-}
-
-/**
- * Unit conversion factors to grams.
- */
-export const UNIT_TO_GRAMS: Record<string, number> = {
-  g: 1,
-  gram: 1,
-  grams: 1,
-  oz: 28.35,
-  ounce: 28.35,
-  ounces: 28.35,
-  lb: 453.592,
-  pound: 453.592,
-  pounds: 453.592,
-  kg: 1000,
-  kilogram: 1000,
-  ml: 1, // Approximate for water-based foods
-  cup: 236.588,
-  tbsp: 14.787,
-  tsp: 4.929,
-} as const;
 
 /**
  * Calculates the scaling factor based on quantity and unit.
@@ -43,7 +13,7 @@ export const UNIT_TO_GRAMS: Record<string, number> = {
  */
 export function calculateScalingFactor(quantity: number, unit: string): number {
   const normalizedUnit = unit.toLowerCase().trim();
-  const gramsPerUnit = UNIT_TO_GRAMS[normalizedUnit] ?? 1;
+  const gramsPerUnit = BASE_CONVERSIONS[normalizedUnit] ?? 1;
   const totalGrams = quantity * gramsPerUnit;
   return totalGrams / 100;
 }
@@ -97,7 +67,7 @@ export function parseNutrimentsFromDuckDB(
 
     const rawName = String(data.name ?? "");
     const normalizedName =
-      normalizeNutrientKey(rawName) ?? `not_mapped_${rawName}`;
+      normalizeToCanonicalKey(rawName) ?? `not_mapped_${rawName}`;
 
     // If we can't normalize it to a known key, map it to "other" or keep raw?
     // User asked to NOT lose data, but our type requires valid key.
@@ -138,7 +108,7 @@ export function extractNutrientValues(
   for (const nutriment of parsed) {
     if (!nutriment.name) continue;
 
-    const key = normalizeNutrientKey(nutriment.name);
+    const key = normalizeToCanonicalKey(nutriment.name);
     const metadata = key ? NUTRIENT_REGISTRY[key] : null;
     if (!key || !metadata) continue;
 
@@ -209,7 +179,7 @@ export function mapCustomFoodToProduct(
 ): FoodProduct {
   const nutriments: Nutriment[] = food.nutriments
     ? Object.entries(food.nutriments).map(([name, value]) => ({
-        name: normalizeNutrientKey(name),
+        name: normalizeToCanonicalKey(name),
         value: Number(value),
         "100g": Number(value),
         serving: null,
