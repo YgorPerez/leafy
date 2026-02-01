@@ -1,101 +1,19 @@
-import type { Nutriment } from "./food.schema";
-import { NUTRIENT_KEYS, type NutrientKey } from "./nutrient-keys";
+import type { FoodProduct, FoodSearchResult, Nutriment } from "./food.schema";
 
-/**
- * Mapping from OpenFoodFacts nutrient names to our generated keys.
- * This provides consistent naming across different data sources.
- */
-export const NUTRIENT_KEY_MAP: Record<string, NutrientKey> = {
-  // Energy
-  "energy-kcal": "Energy", // Mapped to "Energy"
-  energy: "Energy",
-  energy_kCal: "Energy", // Common variation
-  "Energy-kcal": "Energy",
-
-  // Macronutrients
-  proteins: "Protein",
-  protein: "Protein",
-  carbohydrates: "Carbohydrate, by difference", // Closest match
-  carbohydrates_100g: "Carbohydrate, by difference",
-  fat: "Total lipid (fat)", // Closest match
-  "saturated-fat": "Fatty acids, total saturated",
-  "trans-fat": "Fatty acids, total trans",
-
-  // Fiber & Sugars
-  fiber: "Fiber, total dietary",
-  sugars: "Sugars, Total",
-
-  // Minerals
-  sodium: "Sodium, Na",
-  potassium: "Potassium, K",
-  calcium: "Calcium, Ca",
-  iron: "Iron, Fe",
-  magnesium: "Magnesium, Mg",
-  zinc: "Zinc, Zn",
-  phosphorus: "Phosphorus, P",
-  selenium: "Selenium, Se",
-  copper: "Copper, Cu",
-  manganese: "Manganese, Mn",
-
-  // Vitamins
-  "vitamin-a": "Vitamin A, RAE",
-  "vitamin-c": "Vitamin C, total ascorbic acid",
-  "vitamin-d": "Vitamin D (D2 + D3)",
-  "vitamin-e": "Vitamin E (alpha-tocopherol)",
-  "vitamin-k": "Vitamin K (phylloquinone)",
-  "vitamin-b6": "Vitamin B-6",
-  "vitamin-b12": "Vitamin B-12",
-  thiamin: "Thiamin",
-  riboflavin: "Riboflavin",
-  niacin: "Niacin",
-  "pantothenic-acid": "Pantothenic acid",
-  "folic-acid": "Folate, total",
-  folate: "Folate, total",
-  biotin: "Biotin",
-  choline: "Choline, total",
-
-  // Other
-  cholesterol: "Cholesterol",
-  alcohol: "alcohol",
-  caffeine: "caffeine",
-  water: "Water",
-} as const;
+import {
+  convertNutrientValue,
+  normalizeToCanonicalKey,
+  NUTRIENT_REGISTRY,
+  type CanonicalNutrientKey,
+} from "~/lib/nutrients/registry";
 
 /**
  * Normalizes a nutrient key from various formats to our clinical schema format.
  */
-export function normalizeNutrientKey(key: string): NutrientKey | undefined {
-  const lowerKey = key.toLowerCase().trim();
-
-  // 1. Check direct mapping
-  if (key in NUTRIENT_KEY_MAP) {
-    return NUTRIENT_KEY_MAP[key as keyof typeof NUTRIENT_KEY_MAP];
-  }
-  if (lowerKey in NUTRIENT_KEY_MAP) {
-    return NUTRIENT_KEY_MAP[lowerKey as keyof typeof NUTRIENT_KEY_MAP];
-  }
-
-  // 2. Check if it's already a valid key (case-sensitive first, then insensitive lookup)
-  if (NUTRIENT_KEYS.includes(key as NutrientKey)) {
-    return key as NutrientKey;
-  }
-
-  // 3. Fallback: Fuzzy matching
-  if (lowerKey.includes("fiber")) return "Fiber, total dietary";
-  if (lowerKey.includes("iron")) return "Iron, Fe";
-  if (lowerKey.includes("calcium")) return "Calcium, Ca";
-  if (lowerKey.includes("potassium")) return "Potassium, K";
-  if (lowerKey.includes("sodium")) return "Sodium, Na";
-  if (lowerKey.includes("magnesium")) return "Magnesium, Mg";
-  if (lowerKey.includes("zinc")) return "Zinc, Zn";
-  if (lowerKey.includes("protein")) return "Protein";
-  if (lowerKey.includes("carbohydrate")) return "Carbohydrate, by difference";
-
-  // 4. Try to find case-insensitive match in master list
-  const found = NUTRIENT_KEYS.find((k) => k.toLowerCase() === lowerKey);
-  if (found) return found;
-
-  return undefined;
+export function normalizeNutrientKey(
+  key: string,
+): CanonicalNutrientKey | undefined {
+  return normalizeToCanonicalKey(key);
 }
 
 /**
@@ -220,12 +138,18 @@ export function extractNutrientValues(
     if (!nutriment.name) continue;
 
     const key = normalizeNutrientKey(nutriment.name);
-    if (!key) continue;
+    const metadata = key ? NUTRIENT_REGISTRY[key] : null;
+    if (!key || !metadata) continue;
 
-    const value = nutriment["100g"] ?? nutriment.value ?? 0;
+    const rawValue = nutriment["100g"] ?? nutriment.value ?? 0;
+    const convertedValue = convertNutrientValue(
+      Number(rawValue),
+      nutriment.unit ?? null,
+      metadata.unit,
+    );
 
-    if (value && typeof value === "number") {
-      result[key] = value;
+    if (convertedValue !== null && typeof convertedValue === "number") {
+      result[key] = convertedValue;
     }
   }
 
@@ -258,4 +182,94 @@ export function convertBigIntsToNumbers<T>(value: T): T {
   }
 
   return value;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Custom Food Mapping
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface CustomFoodRecord {
+  id: string;
+  name: string;
+  brand: string | null;
+}
+
+export interface CustomFoodFullRecord extends CustomFoodRecord {
+  nutriments: Record<string, number> | null;
+  createdAt: Date;
+  updatedAt: Date | null;
+}
+
+/**
+ * Map custom food to full product format
+ */
+export function mapCustomFoodToProduct(
+  food: CustomFoodFullRecord,
+): FoodProduct {
+  const nutriments: Nutriment[] = food.nutriments
+    ? Object.entries(food.nutriments).map(([name, value]) => ({
+        name: normalizeNutrientKey(name),
+        value: Number(value),
+        "100g": Number(value),
+        serving: null,
+        unit: null,
+        prepared_value: null,
+        prepared_100g: null,
+        prepared_serving: null,
+        prepared_unit: null,
+      }))
+    : [];
+
+  return {
+    code: food.id,
+    product_name: [{ lang: "en", text: food.name }],
+    brands: food.brand,
+    nutriments,
+    source: "User",
+    additives_n: null,
+    additives_tags: [],
+    allergens_tags: [],
+    brands_tags: [],
+    categories: "Custom",
+    categories_tags: [],
+    categories_properties: null,
+    completeness: 1,
+    countries_tags: [],
+    created_t: food.createdAt.getTime() / 1000,
+    creator: "User",
+    ecoscore_grade: "unknown",
+    ecoscore_score: null,
+    generic_name: null,
+    ingredients_n: null,
+    ingredients_text: null,
+    last_modified_t: food.updatedAt ? food.updatedAt.getTime() / 1000 : null,
+    main_countries_tags: [],
+    nutriscore_grade: "unknown",
+    nutriscore_score: null,
+    quantity: null,
+    serving_quantity: null,
+    serving_size: null,
+    stores: null,
+    nova_group: null,
+    popularity_key: null,
+    scans_n: 0,
+    unique_scans_n: 0,
+  };
+}
+
+/**
+ * Map custom food to search result format
+ */
+export function mapCustomFoodToSearchResult(
+  food: CustomFoodRecord,
+): FoodSearchResult {
+  return {
+    code: food.id,
+    product_name: food.name,
+    brands: food.brand,
+    categories: "Custom",
+    nutriscore_grade: "unknown",
+    scans_n: 0,
+    source: "User",
+  };
 }

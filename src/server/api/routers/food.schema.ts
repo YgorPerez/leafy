@@ -77,10 +77,9 @@ const LocalizedTextArraySchema = z
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Generated via data discovery
-import { NUTRIENT_KEYS } from "./nutrient-keys";
 
 export const NutrimentSchema = z.object({
-  name: z.enum(NUTRIENT_KEYS).nullable().optional(),
+  name: z.string().nullable().optional(), // We'll validate/normalize later or use a union if possible
   value: NullableNumber,
   "100g": NullableNumber,
   serving: NullableNumber,

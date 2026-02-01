@@ -10,6 +10,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
+import { type FoodSearchResult } from "~/server/api/routers/food.schema";
 import { api } from "~/trpc/react";
 import { ContextPlate, type PlateItem } from "./context-plate";
 import { FoodDetailsDialog } from "./food-details-dialog";
@@ -40,7 +41,7 @@ export function FoodSearch({ date }: { date: Date }) {
   const [viewingDataSource, setViewingDataSource] =
     useState<DataSource>("branded");
 
-  const toggleSelection = (food: any) => {
+  const toggleSelection = (food: FoodSearchResult) => {
     setPlateItems((prev) => {
       const exists = prev.find((item) => item.food.code === food.code);
       if (exists) {
@@ -245,7 +246,7 @@ export function FoodSearch({ date }: { date: Date }) {
             await logMutation.mutateAsync(
               plateItems.map((item) => ({
                 date: formattedDate,
-                foodCode: item.food.code,
+                foodCode: item.food.code!,
                 foodName: item.food.product_name || "Unknown",
                 foodBrand: item.food.brands,
                 source: item.food.source as any,
@@ -256,8 +257,9 @@ export function FoodSearch({ date }: { date: Date }) {
             toast.success("Logged successfully!");
             setPlateItems([]);
             setIsPlateOpen(false);
-          } catch (e: any) {
-            toast.error("Failed to log items: " + e.message);
+          } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : String(e);
+            toast.error("Failed to log items: " + message);
           }
         }}
         onRemove={(idx) => setPlateItems((p) => p.filter((_, i) => i !== idx))}

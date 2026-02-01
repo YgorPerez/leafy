@@ -37,15 +37,14 @@ export const DUCKDB_PATH = path.join(
 // Global Singleton Pattern (Dev Mode Persistence)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * We use a very specific key on globalThis to ensure the connection survives
- * HMR (Hot Module Replacement) updates in development.
- */
-const GLOBAL_DUCKDB_INSTANCE = "__duckdb_instance__";
-const GLOBAL_DUCKDB_CONN = "__duckdb_connection__";
-const GLOBAL_DUCKDB_INIT = "__duckdb_initialized__";
-
-const globalAny = globalThis as any;
+declare global {
+  // eslint-disable-next-line no-var
+  var __duckdb_instance__: DuckDBInstance | undefined;
+  // eslint-disable-next-line no-var
+  var __duckdb_connection__: DuckDBConnection | undefined;
+  // eslint-disable-next-line no-var
+  var __duckdb_initialized__: boolean | undefined;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Table Definitions
@@ -199,7 +198,7 @@ async function checkTablesExist(connection: DuckDBConnection) {
 }
 
 async function initializeTables(connection: DuckDBConnection): Promise<void> {
-  if (globalAny[GLOBAL_DUCKDB_INIT]) return;
+  if (globalThis.__duckdb_initialized__) return;
 
   const { branded, foundation } = await checkTablesExist(connection);
 
@@ -213,7 +212,7 @@ async function initializeTables(connection: DuckDBConnection): Promise<void> {
     await createFoundationDetailsTable(connection);
   }
 
-  globalAny[GLOBAL_DUCKDB_INIT] = true;
+  globalThis.__duckdb_initialized__ = true;
   console.log("[duckdb] All tables checked/created successfully");
 }
 
@@ -225,8 +224,8 @@ let currentConnectionPromise: Promise<DuckDBConnection> | null = null;
 
 export async function getDuckDBConnection(): Promise<DuckDBConnection> {
   // 1. Return existing connection if available
-  if (globalAny[GLOBAL_DUCKDB_CONN]) {
-    return globalAny[GLOBAL_DUCKDB_CONN];
+  if (globalThis.__duckdb_connection__) {
+    return globalThis.__duckdb_connection__;
   }
 
   // 2. Resolve concurrent connection attempts
@@ -238,12 +237,12 @@ export async function getDuckDBConnection(): Promise<DuckDBConnection> {
     try {
       console.log(`[duckdb] Initializing database at: ${DUCKDB_PATH}`);
 
-      if (!globalAny[GLOBAL_DUCKDB_INSTANCE]) {
-        globalAny[GLOBAL_DUCKDB_INSTANCE] =
+      if (!globalThis.__duckdb_instance__) {
+        globalThis.__duckdb_instance__ =
           await DuckDBInstance.create(DUCKDB_PATH);
       }
 
-      const conn = await globalAny[GLOBAL_DUCKDB_INSTANCE].connect();
+      const conn = await globalThis.__duckdb_instance__.connect();
 
       await conn.run(`
         SET memory_limit = '2GB';
@@ -253,7 +252,7 @@ export async function getDuckDBConnection(): Promise<DuckDBConnection> {
 
       await initializeTables(conn);
 
-      globalAny[GLOBAL_DUCKDB_CONN] = conn;
+      globalThis.__duckdb_connection__ = conn;
       return conn;
     } catch (e) {
       currentConnectionPromise = null;
@@ -273,9 +272,9 @@ export async function queryFood(sql: string, params?: DuckDBValue[]) {
 }
 
 export function clearDuckDBCache() {
-  globalAny[GLOBAL_DUCKDB_CONN] = undefined;
-  globalAny[GLOBAL_DUCKDB_INSTANCE] = undefined;
-  globalAny[GLOBAL_DUCKDB_INIT] = false;
+  globalThis.__duckdb_connection__ = undefined;
+  globalThis.__duckdb_instance__ = undefined;
+  globalThis.__duckdb_initialized__ = false;
 }
 
 export async function rebuildTables(): Promise<void> {
@@ -284,10 +283,10 @@ export async function rebuildTables(): Promise<void> {
   await connection.run("DROP TABLE IF EXISTS food_details");
   await connection.run("DROP TABLE IF EXISTS foundation_search");
   await connection.run("DROP TABLE IF EXISTS foundation_details");
-  globalAny[GLOBAL_DUCKDB_INIT] = false;
+  globalThis.__duckdb_initialized__ = false;
   await initializeTables(connection);
 }
 
 export function isInitialized(): boolean {
-  return globalAny[GLOBAL_DUCKDB_INIT] ?? false;
+  return globalThis.__duckdb_initialized__ ?? false;
 }

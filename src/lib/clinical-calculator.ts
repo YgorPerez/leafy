@@ -6,7 +6,7 @@ export type UserProfile = {
   activityLevel: "sedentary" | "low" | "active" | "very_active";
 };
 
-export type Unit = "mg" | "g" | "mcg" | "L" | "kcal" | "IU" | "NA";
+export type Unit = "mg" | "g" | "mcg" | "L" | "ml" | "kcal" | "IU" | "NA";
 
 export type NutrientValue = {
   recommended: number;
@@ -161,8 +161,8 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
   const fatMax = (tee * 0.35) / 9;
   const proteinRDA = weight * 0.8; // Baseline RDA (0.8g/kg)
 
-  // Water (AI)
-  const water = isMale ? 3.7 : 2.7;
+  // Water (AI) - converted to ml
+  const water = isMale ? 3700 : 2700;
 
   // Helper for amino acid calculation (mg/kg body weight)
   // Values based on WHO/FAO/UNU Expert Consultation
@@ -284,7 +284,7 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
           note: "As low as possible",
         },
       },
-      water: { recommended: water, unit: "L" },
+      water: { recommended: water, unit: "ml" },
 
       // Vitamins
       vitaminA: { recommended: isMale ? 900 : 700, unit: "mcg", ul: 3000 },

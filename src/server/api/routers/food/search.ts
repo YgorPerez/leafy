@@ -7,29 +7,16 @@ import {
   type FoodSearchResult,
   type FoodSource,
 } from "../food.schema";
-import { convertBigIntsToNumbers } from "../food.utils";
+import {
+  convertBigIntsToNumbers,
+  mapCustomFoodToSearchResult,
+} from "../food.utils";
 import {
   mapFoundationToSearchResult,
   searchFoundationFoods,
 } from "./foundation";
 
-interface CustomFoodRecord {
-  id: string;
-  name: string;
-  brand: string | null;
-}
-
-function mapCustomFoodToSearchResult(food: CustomFoodRecord): FoodSearchResult {
-  return {
-    code: food.id,
-    product_name: food.name,
-    brands: food.brand,
-    categories: "Custom",
-    nutriscore_grade: "unknown",
-    scans_n: 0,
-    source: "User",
-  };
-}
+// (Moved mapCustomFoodToSearchResult to food.utils.ts)
 
 async function searchBrandedFoods(
   query: string,
