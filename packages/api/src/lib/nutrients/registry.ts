@@ -808,12 +808,23 @@ export function convertNutrientValue(
 /**
  * Registry Helper: Get clinical recommended value from DRIMetrics
  */
+/**
+ * Type-safe accessor for nutrient intake values.
+ * Enforces that only canonical nutrient keys are used.
+ */
+export function getIntake(
+  intake: Record<string, number> | null | undefined,
+  key: CanonicalNutrientKey,
+): number {
+  return intake?.[key] ?? 0;
+}
+
 export function getClinicalValue(
   metrics: DRIMetrics,
   key: CanonicalNutrientKey,
 ): number | null {
   const metadata = NUTRIENT_REGISTRY[key];
-  if (!metadata || !("clinicalPath" in metadata)) return null;
+  if (!("clinicalPath" in metadata)) return null;
 
   const path = (metadata as unknown as NutrientMetadata).clinicalPath;
   if (!path) return null;
@@ -833,5 +844,5 @@ export function getClinicalValue(
     }
   }
 
-  return (current as { recommended: number })?.recommended ?? null;
+  return (current as { recommended: number }).recommended;
 }

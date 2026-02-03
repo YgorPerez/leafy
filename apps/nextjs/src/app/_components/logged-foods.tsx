@@ -3,6 +3,9 @@
 import { format } from "date-fns";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
+import { getIntake } from "@acme/api/client";
+
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -65,7 +68,7 @@ export function LoggedFoods({ date }: { date: Date }) {
             const nutrients = log.nutrients as
               | Record<string, number>
               | undefined;
-            const energy = nutrients?.["energy_kcal"];
+            const energy = getIntake(nutrients, "energy");
 
             return (
               <div
@@ -80,7 +83,7 @@ export function LoggedFoods({ date }: { date: Date }) {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right text-sm">
-                    {energy !== undefined && (
+                    {energy > 0 && (
                       <span className="font-bold">{energy} kcal</span>
                     )}
                   </div>

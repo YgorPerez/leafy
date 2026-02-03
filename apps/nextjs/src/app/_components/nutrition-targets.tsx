@@ -10,7 +10,7 @@ import type {
   NutrientMetadata,
   NutrientValueRef,
 } from "@acme/api/client";
-import { NUTRIENT_REGISTRY } from "@acme/api/client";
+import { getIntake, NUTRIENT_REGISTRY } from "@acme/api/client";
 
 import type { Goal } from "~/app/_hooks/use-nutrition-goals";
 import { useNutritionGoals } from "~/app/_hooks/use-nutrition-goals";
@@ -141,7 +141,7 @@ export function NutritionTargets({
             }
           />
           <EnergyCard
-            intake={intake?.["energy_kcal"] || 0}
+            intake={getIntake(intake, "energy")}
             target={goals["energy"]?.target ?? metrics.tee}
             onEdit={() =>
               openEdit("energy", goals["energy"] || {}, {
