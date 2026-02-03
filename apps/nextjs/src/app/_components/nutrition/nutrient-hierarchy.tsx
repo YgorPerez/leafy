@@ -1,12 +1,11 @@
 "use client";
 
-import { HIERARCHY, type Goal } from "~/app/_hooks/use-nutrition-goals";
-import type { DRIMetrics } from "~/lib/clinical-calculator";
-import {
-  getClinicalValue,
-  NUTRIENT_REGISTRY,
-  type CanonicalNutrientKey,
-} from "~/lib/nutrients/registry";
+import type { DRIMetrics } from "@acme/api/client";
+import type { CanonicalNutrientKey } from "@acme/api/client";
+import { getClinicalValue, NUTRIENT_REGISTRY } from "@acme/api/client";
+
+import type { Goal } from "~/app/_hooks/use-nutrition-goals";
+import { HIERARCHY } from "~/app/_hooks/use-nutrition-goals";
 import { NutrientRow } from "./nutrient-row";
 
 interface NutrientHierarchyProps {
@@ -40,8 +39,8 @@ export function NutrientHierarchy({
       className={
         depth > 0
           ? depth === 1
-            ? "my-2 space-y-1 border-white/10 border-l pl-4"
-            : "ml-4 border-white/5 border-l pl-4"
+            ? "my-2 space-y-1 border-l border-white/10 pl-4"
+            : "ml-4 border-l border-white/5 pl-4"
           : "space-y-1"
       }
     >

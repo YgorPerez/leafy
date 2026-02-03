@@ -2,13 +2,8 @@
 
 import { useMemo } from "react";
 
-import type { FoodProduct } from "@acme/api";
-
-import type { CanonicalNutrientKey } from "~/lib/nutrients/registry";
-import {
-  convertNutrientValue,
-  NUTRIENT_REGISTRY,
-} from "~/lib/nutrients/registry";
+import type { CanonicalNutrientKey, FoodProduct } from "@acme/api/client";
+import { convertNutrientValue, NUTRIENT_REGISTRY } from "@acme/api/client";
 
 export const MACRO_COLORS = {
   protein: "#ef4444", // red-500

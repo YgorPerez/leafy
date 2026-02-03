@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(pnpm install:*)",
+      "Bash(dir \"c:\\\\Users\\\\Administrator\\\\Documents\\\\github\\\\leafy-turbo\" /s /b)",
+      "Bash(node -e:*)",
+      "Bash(npx turbo run build:*)",
+      "Bash(dir /a \"c:\\\\Users\\\\Administrator\\\\Documents\\\\github\\\\leafy-turbo\")",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command:*)"
+    ]
+  }
+}

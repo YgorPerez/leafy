@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import type { DRIMetrics } from "../../clinical-calculator";
+import type { DRIMetrics } from "../clinical-calculator";
 
 export const NutrientCategorySchema = z.enum([
   "macro",

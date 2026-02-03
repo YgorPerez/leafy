@@ -19,7 +19,7 @@ export function initAuth<
 }) {
   const config = {
     database: drizzleAdapter(db, {
-      provider: "pg",
+      provider: "sqlite",
     }),
     baseURL: options.baseUrl,
     secret: options.secret,
@@ -27,7 +27,7 @@ export function initAuth<
       oAuthProxy({
         productionURL: options.productionUrl,
       }),
-      expo(),
+      expo() as unknown as BetterAuthPlugin,
       ...(options.extraPlugins ?? []),
     ],
     socialProviders: {

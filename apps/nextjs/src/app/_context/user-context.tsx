@@ -1,7 +1,9 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
-import { type DRIMetrics } from "~/lib/clinical-calculator";
+import type { ReactNode } from "react";
+import { createContext, useContext } from "react";
+
+import { type DRIMetrics } from "@acme/api/client";
 
 interface UserContextValue {
   metrics: DRIMetrics | null;

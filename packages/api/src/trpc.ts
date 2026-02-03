@@ -8,7 +8,7 @@
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { z, ZodError } from "zod/v4";
+import { z, ZodError } from "zod";
 
 import type { Auth } from "@acme/auth";
 import { db } from "@acme/db/client";

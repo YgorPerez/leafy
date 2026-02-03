@@ -12,8 +12,12 @@ const globalForDb = globalThis as unknown as {
   client: Client | undefined;
 };
 
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is required");
+}
+
 export const client =
-  globalForDb.client ?? createClient({ url: process.env.DATABASE_URL! });
+  globalForDb.client ?? createClient({ url: process.env.DATABASE_URL });
 if (process.env.NODE_ENV !== "production") globalForDb.client = client;
 
 export const db = drizzle(client, { schema });

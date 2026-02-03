@@ -2,15 +2,12 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import type { DRIMetrics } from "~/lib/clinical-calculator";
-import {
-  type CanonicalNutrientKey,
-  getClinicalValue,
-  NUTRIENT_REGISTRY,
-} from "~/lib/nutrients/registry";
-import { api } from "~/trpc/react";
-
 import { z } from "zod";
+
+import type { CanonicalNutrientKey, DRIMetrics } from "@acme/api/client";
+import { getClinicalValue, NUTRIENT_REGISTRY } from "@acme/api/client";
+
+import { api } from "~/trpc/react";
 
 export const GoalSchema = z.object({
   target: z.number().optional(),

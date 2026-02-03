@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -61,7 +62,7 @@ export function ProfileForm({ onSuccess }: { onSuccess?: () => void }) {
   };
 
   return (
-    <Card className="w-full max-w-lg border-primary/20 bg-black/40 backdrop-blur-sm">
+    <Card className="border-primary/20 w-full max-w-lg bg-black/40 backdrop-blur-sm">
       <CardHeader>
         <CardTitle>Complete Your Profile</CardTitle>
         <CardDescription>

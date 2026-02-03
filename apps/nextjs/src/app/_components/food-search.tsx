@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { Check, Info, Search } from "lucide-react";
 import { toast } from "sonner";
 
-import { type FoodSearchResult } from "@acme/api";
+import { type FoodSearchResult } from "@acme/api/client";
 
 import type { PlateItem } from "./context-plate";
 import { Badge } from "~/components/ui/badge";

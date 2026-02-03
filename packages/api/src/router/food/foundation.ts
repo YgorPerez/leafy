@@ -4,8 +4,8 @@ import type {
   FoundationFood,
   Nutriment,
 } from "../food.schema";
-import { normalizeToCanonicalKey } from "~/lib/nutrients/registry";
 import { getDuckDBConnection } from "../../duckdb";
+import { normalizeToCanonicalKey } from "../../lib/nutrients/registry";
 import { FoundationFoodSchema } from "../food.schema";
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -1,8 +1,19 @@
 "use client";
 
-import { format } from "date-fns";
 import { useState } from "react";
-import { type Goal, useNutritionGoals } from "~/app/_hooks/use-nutrition-goals";
+import { format } from "date-fns";
+
+import type {
+  CanonicalNutrientKey,
+  DRIMetrics,
+  NutrientCategory,
+  NutrientMetadata,
+  NutrientValueRef,
+} from "@acme/api/client";
+import { NUTRIENT_REGISTRY } from "@acme/api/client";
+
+import type { Goal } from "~/app/_hooks/use-nutrition-goals";
+import { useNutritionGoals } from "~/app/_hooks/use-nutrition-goals";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -19,14 +30,6 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import type { DRIMetrics } from "~/lib/clinical-calculator";
-import { type NutrientValueRef } from "~/lib/clinical-calculator";
-import {
-  type CanonicalNutrientKey,
-  NUTRIENT_REGISTRY,
-  type NutrientCategory,
-  type NutrientMetadata,
-} from "~/lib/nutrients/registry";
 import { api } from "~/trpc/react";
 import { BodyCompositionCard } from "./nutrition/body-composition-card";
 import { EnergyCard } from "./nutrition/energy-card";
@@ -90,11 +93,11 @@ export function NutritionTargets({
 
   if (isLoading) {
     return (
-      <Card className="w-full max-w-4xl border-primary/20 bg-primary/5">
+      <Card className="border-primary/20 bg-primary/5 w-full max-w-4xl">
         <CardHeader>
-          <CardTitle className="flex items-center justify-between text-2xl text-primary">
+          <CardTitle className="text-primary flex items-center justify-between text-2xl">
             <span>Nutritional Progress</span>
-            <span className="font-normal text-muted-foreground text-sm">
+            <span className="text-muted-foreground text-sm font-normal">
               Today
             </span>
           </CardTitle>
@@ -112,14 +115,14 @@ export function NutritionTargets({
 
   return (
     <Card className="w-full max-w-4xl overflow-hidden border-white/5 bg-[#0a0a0a] shadow-2xl">
-      <CardHeader className="border-white/5 border-b bg-white/[0.02] py-6">
-        <CardTitle className="flex items-center justify-between bg-gradient-to-br from-white to-white/60 bg-clip-text font-bold text-3xl text-transparent tracking-tight">
+      <CardHeader className="border-b border-white/5 bg-white/[0.02] py-6">
+        <CardTitle className="flex items-center justify-between bg-gradient-to-br from-white to-white/60 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
           <span>Nutritional Progress</span>
-          <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 font-medium text-muted-foreground text-sm backdrop-blur-sm">
+          <span className="text-muted-foreground rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium backdrop-blur-sm">
             {format(date, "MMMM d, yyyy")}
           </span>
         </CardTitle>
-        <CardDescription className="mt-1 text-muted-foreground/80">
+        <CardDescription className="text-muted-foreground/80 mt-1">
           Daily tracking of nutrients vs. customized clinical targets.
         </CardDescription>
       </CardHeader>
@@ -163,13 +166,13 @@ export function NutritionTargets({
 
             return (
               <div className="space-y-6" key={category}>
-                <div className="flex items-center justify-between rounded-md border-primary border-l-4 bg-white/[0.03] py-1.5 pr-2 pl-4">
-                  <h3 className="font-bold text-lg text-white/90 capitalize tracking-tight">
+                <div className="border-primary flex items-center justify-between rounded-md border-l-4 bg-white/[0.03] py-1.5 pr-2 pl-4">
+                  <h3 className="text-lg font-bold tracking-tight text-white/90 capitalize">
                     {category === "macro" ? "Macronutrients" : `${category}s`}
                   </h3>
                   {category === "macro" && (
                     <Button
-                      className="h-7 font-bold text-[10px] text-primary uppercase tracking-wider hover:bg-primary/10"
+                      className="text-primary hover:bg-primary/10 h-7 text-[10px] font-bold tracking-wider uppercase"
                       onClick={() => setMacroEditorOpen(true)}
                       size="sm"
                       variant="ghost"
@@ -211,13 +214,13 @@ export function NutritionTargets({
       >
         <DialogContent className="border-white/10 bg-[#0c0c0c] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-bold text-2xl text-white">
+            <DialogTitle className="text-2xl font-bold text-white">
               Set Custom Goal
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-6 pt-4">
             <div className="space-y-2">
-              <Label className="text-muted-foreground text-xs uppercase tracking-widest">
+              <Label className="text-muted-foreground text-xs tracking-widest uppercase">
                 {editingKey &&
                   NUTRIENT_REGISTRY[editingKey as CanonicalNutrientKey]
                     ?.label}{" "}
@@ -233,7 +236,7 @@ export function NutritionTargets({
                   type="number"
                   value={editState.target}
                 />
-                <span className="font-bold text-muted-foreground">
+                <span className="text-muted-foreground font-bold">
                   {systemRef?.unit}
                 </span>
               </div>
@@ -267,7 +270,7 @@ export function NutritionTargets({
               </div>
             </div>
             <Button
-              className="group relative w-full overflow-hidden bg-primary py-6 font-bold text-lg text-primary-foreground transition-all hover:scale-[1.02]"
+              className="group bg-primary text-primary-foreground relative w-full overflow-hidden py-6 text-lg font-bold transition-all hover:scale-[1.02]"
               onClick={handleSave}
             >
               <div className="relative z-10">Save Goal</div>

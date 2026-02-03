@@ -201,7 +201,7 @@ export const LogFoodInputSchema = z.object({
   dataSource: DataSourceSchema.optional(), // Which database to look up nutrients from
   quantity: z.number(),
   unit: z.string(),
-  nutrients: z.record(z.number()).optional(),
+  nutrients: z.record(z.string(), z.number()).optional(),
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

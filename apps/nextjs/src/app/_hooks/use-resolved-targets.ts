@@ -1,11 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import type { DRIMetrics } from "~/lib/clinical-calculator";
-import {
-  getClinicalValue,
-  normalizeToCanonicalKey,
-} from "~/lib/nutrients/registry";
+
+import type { DRIMetrics } from "@acme/api/client";
+import { getClinicalValue, normalizeToCanonicalKey } from "@acme/api/client";
+
 import { type Goal } from "./use-nutrition-goals";
 
 /**

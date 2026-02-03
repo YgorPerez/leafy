@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
+import type { DRIMetrics } from "@acme/api/client";
+import { getClinicalValue } from "@acme/api/client";
+
 import type { Goal } from "~/app/_hooks/use-nutrition-goals";
 import { Button } from "~/components/ui/button";
 import {
@@ -12,8 +16,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Separator } from "~/components/ui/separator";
-import type { DRIMetrics } from "~/lib/clinical-calculator";
-import { getClinicalValue } from "~/lib/nutrients/registry";
 
 interface MacroEditorProps {
   isOpen: boolean;
@@ -110,13 +112,13 @@ export function MacroEditor({
     <Dialog onOpenChange={(open) => !open && onClose()} open={isOpen}>
       <DialogContent className="border-white/10 bg-[#0c0c0c] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-bold text-2xl text-white">
+          <DialogTitle className="text-2xl font-bold text-white">
             Adjust Macro Ratios
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-6 pt-4">
           <div className="space-y-2">
-            <Label className="font-bold text-muted-foreground text-xs uppercase tracking-widest">
+            <Label className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
               Total Energy Goal
             </Label>
             <div className="flex items-center gap-3">
@@ -133,7 +135,7 @@ export function MacroEditor({
                 type="number"
                 value={state.energy}
               />
-              <span className="font-bold text-muted-foreground">kcal</span>
+              <span className="text-muted-foreground font-bold">kcal</span>
             </div>
           </div>
 
@@ -143,7 +145,7 @@ export function MacroEditor({
             {/* Carbs */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-yellow-500/80 text-xs uppercase">
+                <Label className="text-xs text-yellow-500/80 uppercase">
                   Carbohydrates (%)
                 </Label>
                 <Input
@@ -183,7 +185,7 @@ export function MacroEditor({
             {/* Protein */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-red-500/80 text-xs uppercase">
+                <Label className="text-xs text-red-500/80 uppercase">
                   Protein (%)
                 </Label>
                 <Input
@@ -223,7 +225,7 @@ export function MacroEditor({
             {/* Fat */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-emerald-500/80 text-xs uppercase">
+                <Label className="text-xs text-emerald-500/80 uppercase">
                   Fat (%)
                 </Label>
                 <Input
@@ -263,7 +265,7 @@ export function MacroEditor({
 
           <div className="pt-4">
             <Button
-              className="group relative w-full overflow-hidden bg-primary py-6 font-bold text-lg text-primary-foreground transition-all hover:scale-[1.02]"
+              className="group bg-primary text-primary-foreground relative w-full overflow-hidden py-6 text-lg font-bold transition-all hover:scale-[1.02]"
               onClick={() =>
                 onApply({
                   energy: state.energy,

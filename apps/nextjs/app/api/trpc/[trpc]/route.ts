@@ -4,6 +4,7 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter, createTRPCContext } from "@acme/api";
 
 import { env } from "~/env";
+import { auth } from "~/server/better-auth";
 
 /**
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
@@ -12,6 +13,7 @@ import { env } from "~/env";
 const createContext = async (req: NextRequest) => {
   return createTRPCContext({
     headers: req.headers,
+    auth: auth as any,
   });
 };
 

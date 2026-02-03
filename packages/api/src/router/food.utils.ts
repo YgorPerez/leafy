@@ -1,11 +1,10 @@
 import type { FoodProduct, FoodSearchResult, Nutriment } from "./food.schema";
-
 import {
   BASE_CONVERSIONS,
   convertNutrientValue,
   normalizeToCanonicalKey,
   NUTRIENT_REGISTRY,
-} from "~/lib/nutrients/registry";
+} from "../lib/nutrients/registry";
 
 /**
  * Calculates the scaling factor based on quantity and unit.

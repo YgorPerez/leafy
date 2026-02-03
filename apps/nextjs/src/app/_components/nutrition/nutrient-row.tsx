@@ -1,11 +1,13 @@
 "use client";
 
 import { Edit2 } from "lucide-react";
+
+import type { NutrientValueRef } from "@acme/api/client";
+import { normalizeToCanonicalKey } from "@acme/api/client";
+
 import { type Goal } from "~/app/_hooks/use-nutrition-goals";
 import { Button } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
-import { type NutrientValueRef } from "~/lib/clinical-calculator";
-import { normalizeToCanonicalKey } from "~/lib/nutrients/registry";
 import { cn } from "~/lib/utils";
 
 interface NutrientRowProps {
@@ -57,8 +59,8 @@ export function NutrientRow({
   return (
     <div
       className={cn(
-        "group/row relative -mx-2 flex flex-col gap-1 rounded-lg border-white/5 border-b px-2 py-2.5 transition-all last:border-0 hover:bg-white/[0.02]",
-        indent && "ml-2 border-white/10 border-l pl-4",
+        "group/row relative -mx-2 flex flex-col gap-1 rounded-lg border-b border-white/5 px-2 py-2.5 transition-all last:border-0 hover:bg-white/[0.02]",
+        indent && "ml-2 border-l border-white/10 pl-4",
       )}
     >
       <div className="flex items-center justify-between">
@@ -66,16 +68,16 @@ export function NutrientRow({
           <span
             className={cn(
               "text-sm tracking-tight",
-              isCustomized ? "font-semibold text-primary" : "text-foreground",
+              isCustomized ? "text-primary font-semibold" : "text-foreground",
             )}
           >
             {label}
           </span>
           {isCustomized && (
-            <div className="h-1 w-1 rounded-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+            <div className="bg-primary h-1 w-1 rounded-full shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
           )}
           <Button
-            className="h-6 w-6 text-muted-foreground opacity-0 transition-all hover:bg-primary/10 hover:text-primary group-hover/row:opacity-100"
+            className="text-muted-foreground hover:bg-primary/10 hover:text-primary h-6 w-6 opacity-0 transition-all group-hover/row:opacity-100"
             onClick={() =>
               onEdit(itemKey, currentGoal, value as NutrientValueRef)
             }
@@ -87,20 +89,20 @@ export function NutrientRow({
         </div>
 
         <div className="text-right">
-          <span className="mr-1.5 font-mono text-muted-foreground/60 text-xs">
+          <span className="text-muted-foreground/60 mr-1.5 font-mono text-xs">
             {intakeVal.toFixed(intakeVal < 1 ? 2 : 1)} /
           </span>
           <span
             className={cn(
               "font-mono text-sm",
-              isCustomized ? "font-bold text-primary" : "font-medium",
+              isCustomized ? "text-primary font-bold" : "font-medium",
             )}
           >
             {displayMin && displayMax && !displayTarget
               ? `${displayMin} - ${displayMax}`
               : (displayTarget ?? "-")}
           </span>
-          <span className="ml-1 font-medium text-[10px] text-muted-foreground uppercase tracking-wider">
+          <span className="text-muted-foreground ml-1 text-[10px] font-medium tracking-wider uppercase">
             {value.unit}
           </span>
         </div>
@@ -123,7 +125,7 @@ export function NutrientRow({
         </div>
         <span
           className={cn(
-            "w-9 text-right font-medium font-mono text-[10px]",
+            "w-9 text-right font-mono text-[10px] font-medium",
             progress >= 100 ? "text-emerald-500" : "text-muted-foreground",
           )}
         >
@@ -136,7 +138,7 @@ export function NutrientRow({
 
 export function NutrientRowSkeleton() {
   return (
-    <div className="-mx-2 flex flex-col gap-1 border-white/5 border-b px-2 py-3 last:border-0">
+    <div className="-mx-2 flex flex-col gap-1 border-b border-white/5 px-2 py-3 last:border-0">
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-28 bg-white/5" />
         <Skeleton className="h-4 w-20 bg-white/5" />

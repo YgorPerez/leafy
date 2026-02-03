@@ -2,20 +2,22 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 
+import type { UserProfile } from "@acme/api";
+import { calculateDRI } from "@acme/api";
 import { db } from "@acme/db/client";
 import { user } from "@acme/db/schema";
 
-import type { UserProfile } from "~/lib/clinical-calculator";
 import { AuthForm } from "~/app/_components/auth-form";
 import { Dashboard } from "~/app/_components/dashboard";
 import { ModeToggle } from "~/components/mode-toggle";
 import { Button } from "~/components/ui/button";
-import { calculateDRI } from "~/lib/clinical-calculator";
 import { auth } from "~/server/better-auth";
 import { getSession } from "~/server/better-auth/server";
 import { HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
+  console.log("Rendering Home Page...");
+
   const session = await getSession();
   let metrics = null;
   let dbUser = null;

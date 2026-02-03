@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { addDays, format, isToday, subDays } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+
+import { type DRIMetrics } from "@acme/api/client";
+
 import { AuthForm } from "~/app/_components/auth-form";
 import { FoodSearch } from "~/app/_components/food-search";
 import { LoggedFoods } from "~/app/_components/logged-foods";
@@ -16,7 +19,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { type DRIMetrics } from "~/lib/clinical-calculator";
 
 interface DashboardProps {
   metrics: DRIMetrics | null;
@@ -47,9 +49,9 @@ export function Dashboard({ metrics, customGoals, session }: DashboardProps) {
 
   return (
     <UserProvider metrics={metrics} customGoals={customGoals}>
-      <div className="w-full flex flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-2 py-4 px-6 bg-card rounded-2xl border shadow-sm w-full max-w-md mt-4">
-          <div className="flex items-center justify-between w-full">
+      <div className="flex w-full flex-col items-center gap-8">
+        <div className="bg-card mt-4 flex w-full max-w-md flex-col items-center gap-2 rounded-2xl border px-6 py-4 shadow-sm">
+          <div className="flex w-full items-center justify-between">
             <Button
               variant="ghost"
               size="icon"
@@ -63,9 +65,9 @@ export function Dashboard({ metrics, customGoals, session }: DashboardProps) {
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="flex flex-col items-center gap-0.5 h-auto py-2 px-4 hover:bg-accent/50 rounded-xl transition-all active:scale-95"
+                  className="hover:bg-accent/50 flex h-auto flex-col items-center gap-0.5 rounded-xl px-4 py-2 transition-all active:scale-95"
                 >
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                  <span className="text-muted-foreground text-[10px] leading-none font-bold tracking-widest uppercase">
                     {isTodayDate ? "Today" : format(date, "EEEE")}
                   </span>
                   <span className="text-xl font-bold tracking-tight">
@@ -103,7 +105,7 @@ export function Dashboard({ metrics, customGoals, session }: DashboardProps) {
               variant="link"
               size="sm"
               onClick={goToToday}
-              className="h-4 p-0 text-xs font-medium text-primary hover:no-underline"
+              className="text-primary h-4 p-0 text-xs font-medium hover:no-underline"
             >
               Go to Today
             </Button>
@@ -113,7 +115,7 @@ export function Dashboard({ metrics, customGoals, session }: DashboardProps) {
         <FoodSearch date={date} />
 
         {metrics ? (
-          <div className="w-full flex flex-col items-center gap-8">
+          <div className="flex w-full flex-col items-center gap-8">
             <LoggedFoods date={date} />
             <NutritionTargets
               metrics={metrics}

@@ -1,11 +1,9 @@
 import { authRouter } from "./router/auth";
 import { foodRouter } from "./router/food";
-import { postRouter } from "./router/post";
 import { createCallerFactory, createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
-  post: postRouter,
   food: foodRouter,
 });
 

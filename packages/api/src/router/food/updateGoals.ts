@@ -12,6 +12,7 @@ export const updateGoals = publicProcedure
   .input(
     z.object({
       goals: z.record(
+        z.string(),
         z.object({
           target: z.number().optional(),
           min: z.number().optional(),
