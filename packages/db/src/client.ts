@@ -10,6 +10,7 @@ import * as schema from "./schema";
  */
 const globalForDb = globalThis as unknown as {
   client: Client | undefined;
+  db: ReturnType<typeof drizzle> | undefined;
 };
 
 if (!process.env.DATABASE_URL) {
@@ -18,6 +19,8 @@ if (!process.env.DATABASE_URL) {
 
 export const client =
   globalForDb.client ?? createClient({ url: process.env.DATABASE_URL });
-if (process.env.NODE_ENV !== "production") globalForDb.client = client;
+globalForDb.client = client;
 
-export const db = drizzle(client, { schema });
+export const db =
+  globalForDb.db ?? drizzle(client, { schema, casing: "snake_case" });
+globalForDb.db = db;

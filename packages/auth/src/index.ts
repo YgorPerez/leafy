@@ -20,6 +20,7 @@ export function initAuth<
   const config = {
     database: drizzleAdapter(db, {
       provider: "sqlite",
+      usePlural: false,
     }),
     baseURL: options.baseUrl,
     secret: options.secret,

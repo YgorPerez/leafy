@@ -34,6 +34,7 @@ import { api } from "~/trpc/react";
 import { BodyCompositionCard } from "./nutrition/body-composition-card";
 import { EnergyCard } from "./nutrition/energy-card";
 import { MacroEditor } from "./nutrition/macro-editor";
+import { NutrientBreakdownDialog } from "./nutrition/nutrient-breakdown-dialog";
 import { NutrientHierarchy } from "./nutrition/nutrient-hierarchy";
 import { NutrientRowSkeleton } from "./nutrition/nutrient-row";
 
@@ -65,6 +66,7 @@ export function NutritionTargets({
   }>({ target: "", min: "", max: "" });
   const [systemRef, setSystemRef] = useState<NutrientValueRef | null>(null);
   const [macroEditorOpen, setMacroEditorOpen] = useState(false);
+  const [breakdownKey, setBreakdownKey] = useState<string | null>(null);
 
   const openEdit = (
     key: string,
@@ -191,6 +193,7 @@ export function NutritionTargets({
                       itemKey={key}
                       metrics={metrics}
                       onEdit={openEdit}
+                      onRowClick={setBreakdownKey}
                     />
                   ))}
                 </div>
@@ -206,6 +209,12 @@ export function NutritionTargets({
         metrics={metrics}
         onApply={applyMacroRatios}
         onClose={() => setMacroEditorOpen(false)}
+      />
+
+      <NutrientBreakdownDialog
+        nutrientKey={breakdownKey}
+        date={formattedDate}
+        onClose={() => setBreakdownKey(null)}
       />
 
       <Dialog

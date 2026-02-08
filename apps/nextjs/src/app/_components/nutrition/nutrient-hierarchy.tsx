@@ -18,6 +18,7 @@ interface NutrientHierarchyProps {
     currentVal: Goal,
     refVal?: { recommended: number; unit: string },
   ) => void;
+  onRowClick?: (key: string) => void;
   depth?: number;
 }
 
@@ -27,6 +28,7 @@ export function NutrientHierarchy({
   goals,
   intake,
   onEdit,
+  onRowClick,
   depth = 0,
 }: NutrientHierarchyProps) {
   const meta = NUTRIENT_REGISTRY[itemKey as CanonicalNutrientKey];
@@ -51,6 +53,7 @@ export function NutrientHierarchy({
         itemKey={itemKey}
         label={meta.label}
         onEdit={onEdit}
+        onRowClick={onRowClick}
         value={{
           recommended: getClinicalValue(
             metrics,
@@ -67,6 +70,7 @@ export function NutrientHierarchy({
           itemKey={childKey}
           metrics={metrics}
           onEdit={onEdit}
+          onRowClick={onRowClick}
           depth={depth + 1}
         />
       ))}

@@ -30,6 +30,9 @@ export const user = sqliteTable("user", (d) => ({
   goals: d
     .text({ mode: "json" })
     .$type<Record<string, { target?: number; min?: number; max?: number }>>(), // Custom nutrient goals
+  dashboardConfig: d
+    .text({ mode: "json" })
+    .$type<{ widgets: Array<{ id: string; order: number }> }>(),
 }));
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -38,6 +41,7 @@ export const userRelations = relations(user, ({ many }) => ({
 
   customFoods: many(customFood),
   dailyLogs: many(dailyLog),
+  weightLogs: many(weightLog),
 }));
 
 export const account = sqliteTable(
@@ -181,4 +185,30 @@ export const dailyLog = sqliteTable(
 
 export const dailyLogRelations = relations(dailyLog, ({ one }) => ({
   user: one(user, { fields: [dailyLog.userId], references: [user.id] }),
+}));
+
+export const weightLog = sqliteTable(
+  "weight_log",
+  (d) => ({
+    id: d
+      .text({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: d
+      .text({ length: 255 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: d.text({ length: 12 }).notNull(), // YYYY-MM-DD
+    weight: d.real().notNull(), // kg
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+  }),
+  (t) => [index("weight_log_user_date_idx").on(t.userId, t.date)],
+);
+
+export const weightLogRelations = relations(weightLog, ({ one }) => ({
+  user: one(user, { fields: [weightLog.userId], references: [user.id] }),
 }));

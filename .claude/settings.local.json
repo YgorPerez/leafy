@@ -8,7 +8,8 @@
       "Bash(npx turbo run build:*)",
       "Bash(dir /a \"c:\\\\Users\\\\Administrator\\\\Documents\\\\github\\\\leafy-turbo\")",
       "Bash(findstr:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(pnpm --filter nextjs build:*)"
     ]
   }
 }

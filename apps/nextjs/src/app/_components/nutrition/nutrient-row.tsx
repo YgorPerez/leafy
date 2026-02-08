@@ -18,6 +18,7 @@ interface NutrientRowProps {
   intake?: Record<string, number>;
   indent?: boolean;
   onEdit: (key: string, currentGoal: Goal, refVal: NutrientValueRef) => void;
+  onRowClick?: (key: string) => void;
 }
 
 export function NutrientRow({
@@ -28,6 +29,7 @@ export function NutrientRow({
   intake,
   indent,
   onEdit,
+  onRowClick,
 }: NutrientRowProps) {
   const currentGoal = goals[itemKey] || {};
   const isCustomized =
@@ -59,9 +61,10 @@ export function NutrientRow({
   return (
     <div
       className={cn(
-        "group/row relative -mx-2 flex flex-col gap-1 rounded-lg border-b border-white/5 px-2 py-2.5 transition-all last:border-0 hover:bg-white/[0.02]",
+        "group/row relative -mx-2 flex cursor-pointer flex-col gap-1 rounded-lg border-b border-white/5 px-2 py-2.5 transition-all last:border-0 hover:bg-white/[0.02]",
         indent && "ml-2 border-l border-white/10 pl-4",
       )}
+      onClick={() => onRowClick?.(itemKey)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -78,9 +81,10 @@ export function NutrientRow({
           )}
           <Button
             className="text-muted-foreground hover:bg-primary/10 hover:text-primary h-6 w-6 opacity-0 transition-all group-hover/row:opacity-100"
-            onClick={() =>
-              onEdit(itemKey, currentGoal, value as NutrientValueRef)
-            }
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(itemKey, currentGoal, value as NutrientValueRef);
+            }}
             size="icon"
             variant="ghost"
           >

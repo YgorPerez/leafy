@@ -5,11 +5,16 @@ import { createContext, useContext } from "react";
 
 import { type DRIMetrics } from "@acme/api/client";
 
+interface DashboardConfig {
+  widgets: Array<{ id: string; order: number }>;
+}
+
 interface UserContextValue {
   metrics: DRIMetrics | null;
   customGoals:
     | Record<string, { target?: number; min?: number; max?: number }>
     | undefined;
+  dashboardConfig: DashboardConfig | null;
 }
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
@@ -18,15 +23,17 @@ export function UserProvider({
   children,
   metrics,
   customGoals,
+  dashboardConfig,
 }: {
   children: ReactNode;
   metrics: DRIMetrics | null;
   customGoals:
     | Record<string, { target?: number; min?: number; max?: number }>
     | undefined;
+  dashboardConfig: DashboardConfig | null;
 }) {
   return (
-    <UserContext.Provider value={{ metrics, customGoals }}>
+    <UserContext.Provider value={{ metrics, customGoals, dashboardConfig }}>
       {children}
     </UserContext.Provider>
   );

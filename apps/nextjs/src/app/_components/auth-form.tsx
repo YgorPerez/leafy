@@ -31,13 +31,12 @@ export function AuthForm() {
       {
         email,
         password,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {
           toast.success("Signed in successfully");
-          // Router refresh is handled by the redirect/callback usually, but we can force it
-          window.location.reload();
+          window.location.href = "/dashboard";
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
@@ -58,12 +57,12 @@ export function AuthForm() {
         email,
         password,
         name,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {
           toast.success("Account created successfully");
-          window.location.reload();
+          window.location.href = "/dashboard";
         },
         onError: (ctx) => {
           toast.error(ctx.error.message);
@@ -78,7 +77,7 @@ export function AuthForm() {
     await authClient.signIn.social(
       {
         provider,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       },
       {
         onSuccess: () => {

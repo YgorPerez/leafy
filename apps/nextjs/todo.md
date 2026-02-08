@@ -1,10 +1,9 @@
-- [ ] I should be able to click in any nutrient goal and see how todays foods are contributing to it
-- [ ] [Menus and sections](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/menus-and-sections.md)
-- [ ] [UI Revamp](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/ui-revamp.md)
-- [ ] [Onboarding flow](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/onboarding-flow.md)
-- [ ] [Widgets dashboard](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/widgets-dashboard.md)
-- [ ] [Day management](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/day-management.md)
-- [ ] [Meal grouping and DIASS](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/meal-grouping.md)
+- [ ] [Menus and sections](docs/features/menus-and-sections.md)
+- [ ] [UI Revamp](docs/features/ui-revamp.md)
+- [ ] [Onboarding flow](docs/features/onboarding-flow.md)
+- [ ] [Widgets dashboard](docs/features/widgets-dashboard.md)
+- [ ] [Day management](docs/features/day-management.md)
+- [ ] [Meal grouping and DIASS](docs/features/meal-grouping.md)
 - [ ] Add food suggestions for each nutrient
 - [ ] Daily dozen 21 tweaks tracking
 - [ ] Single add option, that will always open the details dialog and let the user log the food there
