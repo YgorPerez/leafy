@@ -7,6 +7,7 @@ import {
   logFoods,
   search,
   updateGoals,
+  updateLog,
   updateProfile,
 } from "./food/index";
 
@@ -21,6 +22,7 @@ export const foodRouter = createTRPCRouter({
   getDailyNutrition,
   getDailyLogs,
   deleteLog,
+  updateLog,
   updateProfile,
   updateGoals,
 });

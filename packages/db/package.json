@@ -29,8 +29,8 @@
     "with-env": "dotenv -e ../../.env --"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
-    "drizzle-orm": "^0.44.7",
+    "@libsql/client": "^0.17.0",
+    "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "zod": "catalog:"
   },
@@ -39,7 +39,7 @@
     "@acme/prettier-config": "workspace:*",
     "@acme/tsconfig": "workspace:*",
     "@types/node": "catalog:",
-    "drizzle-kit": "^0.31.5",
+    "drizzle-kit": "^0.31.8",
     "eslint": "catalog:",
     "prettier": "catalog:",
     "typescript": "catalog:"

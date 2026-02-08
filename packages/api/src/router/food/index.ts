@@ -5,4 +5,5 @@ export { getDailyNutrition } from "./getDailyNutrition";
 export { logFoods } from "./logFoods";
 export { search } from "./search";
 export { updateGoals } from "./updateGoals";
+export { updateLog } from "./updateLog";
 export { updateProfile } from "./updateProfile";

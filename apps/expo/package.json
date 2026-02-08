@@ -64,7 +64,7 @@
     "react-native-svg": "~15.11.0",
     "react-native-worklets": "~0.5.1",
     "reactotron-react-native": "catalog:",
-    "superjson": "2.2.3",
+    "superjson": "2.2.6",
     "zustand": "catalog:"
   },
   "devDependencies": {

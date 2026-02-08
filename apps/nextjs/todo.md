@@ -1,5 +1,3 @@
-- [ ] Change the tech stack, react native, expo, zustand, trpc, flashlist, react-native-mmkv, convex, tanstack-form, reactnativereusables, uniwind, drizzle, duckdb, zod, reactotron, keep it working for web too
-
 - [ ] I should be able to click in any nutrient goal and see how todays foods are contributing to it
 - [ ] [Menus and sections](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/menus-and-sections.md)
 - [ ] [UI Revamp](file:///c:/Users/Administrator/Documents/github/leafy/docs/features/ui-revamp.md)
