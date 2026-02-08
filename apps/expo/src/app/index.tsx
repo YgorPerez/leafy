@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, Stack } from "expo-router";
-import { LegendList } from "@legendapp/list";
+import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type { RouterOutputs } from "~/utils/api";
@@ -152,15 +152,15 @@ export default function Index() {
           </Text>
         </View>
 
-        <LegendList
+        <FlashList
           data={postQuery.data ?? []}
-          estimatedItemSize={20}
+          estimatedItemSize={80}
           keyExtractor={(item) => item.id}
           ItemSeparatorComponent={() => <View className="h-2" />}
-          renderItem={(p) => (
+          renderItem={({ item }) => (
             <PostCard
-              post={p.item}
-              onDelete={() => deletePostMutation.mutate(p.item.id)}
+              post={item}
+              onDelete={() => deletePostMutation.mutate(item.id)}
             />
           )}
         />
