@@ -36,7 +36,7 @@ async function searchBrandedFoods(
       categories: row.categories as string | null,
       nutriscore_grade: row.nutriscore_grade as string | null,
       scans_n: row.scans_n as number | null,
-      source: (row.source as FoodSource) ?? "Branded",
+      source: row.source as FoodSource,
     }));
 }
 

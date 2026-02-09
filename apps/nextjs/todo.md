@@ -1,5 +1,7 @@
+- [ ] fix meal grouping, some foods are logged in the same minute, but arent being groupped
+- [ ] check the portion size again to guarantee its being tracked correctly. i have a hunch that the portion size is not being tracked correctly and its being converted wrong to the grams, especially the kcal, depending on what you discover is better to always calculate kcal by macros
+- [ ] track salt intake and convert it to sodium
 - [ ] [UI Revamp](docs/features/ui-revamp.md)
-- [ ] [Meal Grouping & DIASS](docs/features/meal-grouping.md)
 
 ## Core Tracking & Logging
 

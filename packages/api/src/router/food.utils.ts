@@ -31,6 +31,27 @@ export function scaleNutrients(
   return scaled;
 }
 
+interface DuckDBNutrientEntry {
+  name?: string;
+  value?: number | string | null;
+  "100g"?: number | string | null;
+  serving?: number | string | null;
+  unit?: string | null;
+  prepared_value?: number | string | null;
+  prepared_100g?: number | string | null;
+  prepared_serving?: number | string | null;
+  prepared_unit?: string | null;
+}
+
+interface DuckDBUSDANutrient {
+  nutrient: {
+    name: string;
+    unitName: string;
+  };
+  amount?: number | null;
+  value?: number | null;
+}
+
 /**
  * DuckDB nested structs for nutriments come back in various formats.
  * This function normalizes them into a consistent array format.
@@ -40,56 +61,92 @@ export function parseNutrimentsFromDuckDB(
 ): Nutriment[] | null {
   if (!nutriments) return null;
 
-  let items = nutriments as unknown;
-
-  // Handle { items: [...] } wrapper
+  // Handle { items: [...] } wrapper (OpenFoodFacts format)
   if (
-    typeof items === "object" &&
-    items !== null &&
-    "items" in items &&
-    Array.isArray((items as { items: unknown }).items)
+    typeof nutriments === "object" &&
+    "items" in nutriments &&
+    Array.isArray((nutriments as { items: unknown[] }).items)
   ) {
-    items = (items as { items: unknown[] }).items;
+    const items = (nutriments as { items: unknown[] }).items;
+    return items.map((item) => {
+      const data =
+        typeof item === "object" && item !== null && "entries" in item
+          ? ((item as { entries: unknown }).entries as DuckDBNutrientEntry)
+          : (item as DuckDBNutrientEntry);
+
+      const rawName = data.name ?? "";
+      const normalizedName =
+        normalizeToCanonicalKey(rawName) ?? `not_mapped_${rawName}`;
+
+      return {
+        name: normalizedName,
+        value: data.value != null ? Number(data.value) : null,
+        "100g": data["100g"] != null ? Number(data["100g"]) : null,
+        serving: data.serving != null ? Number(data.serving) : null,
+        unit: data.unit ?? null,
+        prepared_value:
+          data.prepared_value != null ? Number(data.prepared_value) : null,
+        prepared_100g:
+          data.prepared_100g != null ? Number(data.prepared_100g) : null,
+        prepared_serving:
+          data.prepared_serving != null ? Number(data.prepared_serving) : null,
+        prepared_unit: data.prepared_unit ?? null,
+      } satisfies Nutriment;
+    });
   }
 
-  if (!Array.isArray(items)) return null;
+  // Handle { foodNutrients: [...] } wrapper (USDA Foundation format)
+  if (
+    typeof nutriments === "object" &&
+    "foodNutrients" in nutriments &&
+    Array.isArray((nutriments as { foodNutrients: unknown[] }).foodNutrients)
+  ) {
+    const foodNutrients = (nutriments as { foodNutrients: unknown[] })
+      .foodNutrients;
+    return foodNutrients.map((n) => {
+      const entry = n as DuckDBUSDANutrient;
+      const val = entry.amount ?? entry.value ?? 0;
+      return {
+        name:
+          normalizeToCanonicalKey(entry.nutrient.name) ?? entry.nutrient.name,
+        value: val,
+        "100g": val,
+        serving: null,
+        unit: entry.nutrient.unitName,
+        prepared_value: null,
+        prepared_100g: null,
+        prepared_serving: null,
+        prepared_unit: null,
+      } satisfies Nutriment;
+    });
+  }
 
-  return items.map((item: unknown) => {
-    // Handle { entries: {...} } wrapper
-    const data =
-      typeof item === "object" &&
-      item !== null &&
-      "entries" in item &&
-      typeof (item as { entries: unknown }).entries === "object"
-        ? (item as { entries: Record<string, unknown> }).entries
-        : (item as Record<string, unknown>);
+  // Handle direct array format
+  if (Array.isArray(nutriments)) {
+    return nutriments.map((item: unknown) => {
+      const data = item as DuckDBNutrientEntry;
+      const rawName = data.name ?? "";
+      const normalizedName =
+        normalizeToCanonicalKey(rawName) ?? `not_mapped_${rawName}`;
 
-    const rawName = String(data.name ?? "");
-    const normalizedName =
-      normalizeToCanonicalKey(rawName) ?? `not_mapped_${rawName}`;
+      return {
+        name: normalizedName,
+        value: data.value != null ? Number(data.value) : null,
+        "100g": data["100g"] != null ? Number(data["100g"]) : null,
+        serving: data.serving != null ? Number(data.serving) : null,
+        unit: data.unit ?? null,
+        prepared_value:
+          data.prepared_value != null ? Number(data.prepared_value) : null,
+        prepared_100g:
+          data.prepared_100g != null ? Number(data.prepared_100g) : null,
+        prepared_serving:
+          data.prepared_serving != null ? Number(data.prepared_serving) : null,
+        prepared_unit: data.prepared_unit ?? null,
+      } satisfies Nutriment;
+    });
+  }
 
-    // If we can't normalize it to a known key, map it to "other" or keep raw?
-    // User asked to NOT lose data, but our type requires valid key.
-    // If undefined, we can't fit it in NutrientKey type.
-    // However, since NUTRIENT_KEYS contains ALL keys from data,
-    // it should be found unless the Parquet changed since extraction.
-
-    return {
-      name: normalizedName,
-      value: data.value != null ? Number(data.value) : null,
-      "100g": data["100g"] != null ? Number(data["100g"]) : null,
-      serving: data.serving != null ? Number(data.serving) : null,
-      unit: data.unit != null ? String(data.unit) : null,
-      prepared_value:
-        data.prepared_value != null ? Number(data.prepared_value) : null,
-      prepared_100g:
-        data.prepared_100g != null ? Number(data.prepared_100g) : null,
-      prepared_serving:
-        data.prepared_serving != null ? Number(data.prepared_serving) : null,
-      prepared_unit:
-        data.prepared_unit != null ? String(data.prepared_unit) : null,
-    } satisfies Nutriment;
-  });
+  return null;
 }
 
 /**
@@ -123,6 +180,23 @@ export function extractNutrientValues(
     }
   }
 
+  // Calculate energy from macros using Atwater General Factors.
+  // We prioritize calculation from macros for consistency if any macro is present.
+  const hasMacros =
+    result.protein !== undefined ||
+    result.fat !== undefined ||
+    result.carbohydrate !== undefined ||
+    result.sugar !== undefined ||
+    result.starch !== undefined;
+
+  if (hasMacros) {
+    const p = result.protein ?? 0;
+    const f = result.fat ?? 0;
+    const c = result.carbohydrate ?? (result.starch ?? 0) + (result.sugar ?? 0);
+    const calculated = p * 4 + c * 4 + f * 9;
+    result.energy = Number(calculated.toFixed(2));
+  }
+
   return result;
 }
 
@@ -140,7 +214,9 @@ export function convertBigIntsToNumbers<T>(value: T): T {
   }
 
   if (Array.isArray(value)) {
-    return value.map((item) => convertBigIntsToNumbers(item)) as T;
+    return value.map((item: unknown) =>
+      convertBigIntsToNumbers(item),
+    ) as unknown as T;
   }
 
   if (typeof value === "object") {
@@ -148,7 +224,7 @@ export function convertBigIntsToNumbers<T>(value: T): T {
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
       result[key] = convertBigIntsToNumbers(val);
     }
-    return result as T;
+    return result as unknown as T;
   }
 
   return value;

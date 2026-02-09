@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Apple,
@@ -78,7 +78,15 @@ export function OnboardingWizard({ userName }: { userName?: string }) {
   const [direction, setDirection] = useState<"forward" | "backward">("forward");
   const [animKey, setAnimKey] = useState(0);
   const totalSteps = STEPS.length;
-  const progressValue = ((store.currentStep + 1) / totalSteps) * 100;
+  const currentStep = Math.min(Math.max(0, store.currentStep), totalSteps - 1);
+  const progressValue = ((currentStep + 1) / totalSteps) * 100;
+
+  // Ensure we don't crash if currentStep is out of bounds (e.g. from stale localStorage)
+  useEffect(() => {
+    if (store.currentStep >= totalSteps) {
+      store.setStep(totalSteps - 1);
+    }
+  }, [store.currentStep, totalSteps, store.setStep]);
 
   const completeMutation = api.food.completeOnboarding.useMutation({
     onSuccess: () => {
@@ -141,8 +149,8 @@ export function OnboardingWizard({ userName }: { userName?: string }) {
     });
   }, [store, userName, completeMutation]);
 
-  const StepComponent = STEPS[store.currentStep]!.component;
-  const isLast = store.currentStep === totalSteps - 1;
+  const StepComponent = STEPS[currentStep]!.component;
+  const isLast = currentStep === totalSteps - 1;
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-start px-4 py-8">
@@ -151,7 +159,7 @@ export function OnboardingWizard({ userName }: { userName?: string }) {
           Leafy <span className="text-primary">Log</span>
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Step {store.currentStep + 1} of {totalSteps}
+          Step {currentStep + 1} of {totalSteps}
         </p>
       </div>
 
@@ -162,7 +170,7 @@ export function OnboardingWizard({ userName }: { userName?: string }) {
         <div className="mt-3 flex justify-between px-1">
           {STEPS.map((step, i) => {
             const Icon = step.icon;
-            const isActive = i === store.currentStep;
+            const isActive = i === currentStep;
             const isComplete = store.completedSteps.includes(i);
             return (
               <div
@@ -193,7 +201,7 @@ export function OnboardingWizard({ userName }: { userName?: string }) {
       >
         <StepComponent
           onNext={isLast ? onComplete : onNext}
-          onBack={store.currentStep > 0 ? onBack : undefined}
+          onBack={currentStep > 0 ? onBack : undefined}
           isLast={isLast}
           isPending={completeMutation.isPending}
         />

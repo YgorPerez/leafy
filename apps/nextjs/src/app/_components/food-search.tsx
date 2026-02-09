@@ -28,7 +28,7 @@ export function FoodSearch({ date }: { date: Date }) {
   const utils = api.useUtils();
   const logMutation = api.food.logFoods.useMutation({
     onSuccess: () => {
-      void utils.food.getDailyLogs.invalidate();
+      void utils.meal.getDailyMeals.invalidate();
       void utils.food.getDailyNutrition.invalidate();
       void utils.day.getMonth.invalidate();
     },
@@ -52,7 +52,10 @@ export function FoodSearch({ date }: { date: Date }) {
         return prev.filter((item) => item.food.code !== food.code);
       }
       setIsPlateOpen(true);
-      return [...prev, { food: food, quantity: 100, unit: "g" }];
+      return [
+        ...prev,
+        { food: food, quantity: 100, unit: "g", dataSource: dataSource },
+      ];
     });
   };
 
@@ -244,12 +247,19 @@ export function FoodSearch({ date }: { date: Date }) {
         isOpen={isPlateOpen && plateItems.length > 0}
         items={plateItems}
         onClose={() => setIsPlateOpen(false)}
-        onLog={async () => {
+        onLog={async (timeStr) => {
           const formattedDate = format(date, "yyyy-MM-dd");
+
+          // Construct full loggedAt date
+          const [hours, minutes] = timeStr.split(":").map(Number);
+          const loggedAt = new Date(date);
+          loggedAt.setHours(hours || 0, minutes || 0, 0, 0);
+
           try {
             await logMutation.mutateAsync(
               plateItems.map((item) => ({
                 date: formattedDate,
+                loggedAt: loggedAt,
                 foodCode: item.food.code!,
                 foodName: item.food.product_name || "Unknown",
                 foodBrand: item.food.brands,
@@ -262,6 +272,7 @@ export function FoodSearch({ date }: { date: Date }) {
                   | "User"
                   | "Foundation"
                   | undefined,
+                dataSource: item.dataSource,
                 quantity: item.quantity,
                 unit: item.unit,
               })),

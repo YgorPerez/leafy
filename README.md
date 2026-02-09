@@ -1,3 +1,9 @@
+# sources
+
+Open food facts: https://world.openfoodfacts.org/data
+DIASS: https://data.mendeley.com/datasets/gz3cx7d5f4/1
+USDA: https://fdc.nal.usda.gov/download-datasets
+
 # create-t3-turbo
 
 > [!NOTE]

@@ -284,7 +284,7 @@ export function calculateOnboardingTDEE(
   const adjustedBmr = bmr * metabolicAdaptationMultiplier * deficitMultiplier;
 
   // 5. TDEE
-  const pal = ACTIVITY_FACTORS[activityLevel] ?? 1.2;
+  const pal = ACTIVITY_FACTORS[activityLevel];
   const tdee = Math.round(adjustedBmr * pal);
 
   // 6. Daily calorie target
@@ -305,9 +305,7 @@ export function calculateOnboardingTDEE(
   // 7. Estimated weeks to goal
   const weightDiff = Math.abs(targetWeightKg - weightKg);
   const weeksToGoal =
-    weeklyWeightChangeKg > 0
-      ? Math.ceil(weightDiff / weeklyWeightChangeKg)
-      : 0;
+    weeklyWeightChangeKg > 0 ? Math.ceil(weightDiff / weeklyWeightChangeKg) : 0;
 
   const goalDate = new Date();
   goalDate.setDate(goalDate.getDate() + weeksToGoal * 7);
@@ -324,7 +322,7 @@ export function calculateOnboardingTDEE(
       goalType === "lose" ? -weeklyCalorieDelta : weeklyCalorieDelta,
     ),
     estimatedWeeksToGoal: weeksToGoal,
-    estimatedGoalDate: goalDate.toISOString().split("T")[0]!,
+    estimatedGoalDate: goalDate.toISOString().split("T")[0] ?? "",
   };
 }
 
@@ -352,7 +350,7 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
   }
 
   // 3. TEE - Total Energy Expenditure
-  const tee = bmr * (ACTIVITY_FACTORS[activityLevel] || 1.2);
+  const tee = bmr * ACTIVITY_FACTORS[activityLevel];
 
   // 4. Macronutrient Ranges (based on AMDR)
   const carbMin = (tee * AMDR.CARBS.MIN) / ENERGY_FACTORS.CARBS;

@@ -35,11 +35,10 @@ export const DUCKDB_PATH = path.join(
 // ─────────────────────────────────────────────────────────────────────────────
 
 declare global {
-   
   var __duckdb_instance__: DuckDBInstance | undefined;
-   
+
   var __duckdb_connection__: DuckDBConnection | undefined;
-   
+
   var __duckdb_initialized__: boolean | undefined;
 }
 
@@ -62,16 +61,19 @@ async function createSearchTable(connection: DuckDBConnection): Promise<void> {
       categories,
       nutriscore_grade,
       COALESCE(scans_n, 0) as scans_n,
+      COALESCE(completeness, 0) as completeness,
       creator,
       CASE
+        WHEN contains(lower(creator), 'usda') THEN 'USDA'
         WHEN contains(lower(creator), 'cnf') THEN 'CNF'
         WHEN contains(lower(creator), 'ifcdb') THEN 'IFCDB'
         ELSE 'Branded'
       END as source,
       CASE
+        WHEN contains(lower(creator), 'usda') THEN 1
         WHEN contains(lower(creator), 'cnf') THEN 1
-        WHEN contains(lower(creator), 'ifcdb') THEN 2
-        ELSE 3
+        WHEN contains(lower(creator), 'ifcdb') THEN 1
+        ELSE 2
       END as source_priority
     FROM "${FOOD_PARQUET_PATH.replace(/\\/g, "/")}"
   `);
@@ -234,10 +236,8 @@ export async function getDuckDBConnection(): Promise<DuckDBConnection> {
     try {
       console.log(`[duckdb] Initializing database at: ${DUCKDB_PATH}`);
 
-      if (!globalThis.__duckdb_instance__) {
-        globalThis.__duckdb_instance__ =
-          await DuckDBInstance.create(DUCKDB_PATH);
-      }
+      globalThis.__duckdb_instance__ ??=
+        await DuckDBInstance.create(DUCKDB_PATH);
 
       const conn = await globalThis.__duckdb_instance__.connect();
 

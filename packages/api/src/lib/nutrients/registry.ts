@@ -721,6 +721,12 @@ export function normalizeToCanonicalKey(
   }
 
   // 2. Fuzzy/Partial Match for resilient mapping
+  if (
+    lowerName.includes("energy") ||
+    lowerName.includes("kcal") ||
+    lowerName === "calories"
+  )
+    return "energy";
   if (lowerName.includes("fiber")) return "fiber";
   if (lowerName.includes("protein")) return "protein";
   if (

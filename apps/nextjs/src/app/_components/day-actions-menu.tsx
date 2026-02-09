@@ -80,7 +80,7 @@ export function DayActionsMenu({ date }: DayActionsMenuProps) {
       setIsCopyDialogOpen(false);
       // Invalidate target date to refresh if user navigates there
       if (targetDate) {
-        void utils.food.getDailyLogs.invalidate({
+        void utils.meal.getDailyMeals.invalidate({
           date: format(targetDate, "yyyy-MM-dd"),
         });
       }

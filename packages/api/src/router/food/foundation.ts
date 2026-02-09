@@ -51,11 +51,13 @@ export async function searchFoundationFoods(
     ],
   );
 
-  return reader.getRowObjects().map((row) => {
+  return reader.getRowObjects().map((row: Record<string, unknown>) => {
     const rawJson = row.json_data;
     try {
       const jsonData =
-        typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+        typeof rawJson === "string"
+          ? (JSON.parse(rawJson) as Record<string, unknown>)
+          : (rawJson as Record<string, unknown>);
       return FoundationFoodSchema.parse(jsonData);
     } catch (e) {
       console.error("[foundation] Failed to parse food JSON:", e);
@@ -83,11 +85,15 @@ export async function getFoundationFoodById(
   const rows = reader.getRowObjects();
   if (rows.length === 0) return undefined;
 
-  const row = rows[0]!;
+  const row = rows[0] as Record<string, unknown> | undefined;
+  if (!row) return undefined;
+
   const rawJson = row.json_data;
   try {
     const jsonData =
-      typeof rawJson === "string" ? JSON.parse(rawJson) : rawJson;
+      typeof rawJson === "string"
+        ? (JSON.parse(rawJson) as Record<string, unknown>)
+        : (rawJson as Record<string, unknown>);
     return FoundationFoodSchema.parse(jsonData);
   } catch (e) {
     console.error("[foundation] Failed to parse food JSON by ID:", e);
@@ -127,8 +133,8 @@ function mapFoundationNutrientToNutriment(
 
   return {
     name,
-    value: nutrient.amount,
-    "100g": nutrient.amount,
+    value: nutrient.amount ?? nutrient.value,
+    "100g": nutrient.amount ?? nutrient.value,
     serving: null,
     unit: nutrient.nutrient.unitName,
     prepared_value: null,
@@ -148,7 +154,7 @@ export function mapFoundationToProduct(food: FoundationFood): FoodProduct {
 
   const primaryPortion = food.foodPortions?.[0];
   const servingSize = primaryPortion
-    ? `${primaryPortion.amount ?? primaryPortion.value ?? 1} ${primaryPortion.measureUnit.name} (${primaryPortion.gramWeight}g)`
+    ? `${String(primaryPortion.amount ?? primaryPortion.value ?? 1)} ${primaryPortion.measureUnit.name} (${String(primaryPortion.gramWeight)}g)`
     : null;
   const servingQuantity = primaryPortion?.gramWeight
     ? String(primaryPortion.gramWeight)

@@ -2,7 +2,7 @@
   "name": "leafy",
   "private": true,
   "engines": {
-    "node": ">=22.21.0",
+    "node": ">=25.4.0",
     "pnpm": "^10.19.0"
   },
   "packageManager": "pnpm@10.19.0",

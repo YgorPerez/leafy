@@ -2,12 +2,12 @@ import type { FoodSource } from "./food.schema";
 
 export const SOURCE_PRIORITY: Record<FoodSource, number> = {
   Foundation: 0,
+  USDA: 1,
+  CNF: 1,
+  IFCDB: 1,
   NCCDB: 1,
-  USDA: 2,
-  CNF: 3,
-  IFCDB: 4,
-  Branded: 5,
-  User: 6,
+  Branded: 2,
+  User: 3,
 } as const;
 
 /**
@@ -29,6 +29,8 @@ export function buildSearchSQL(): string {
        OR contains(brands_lower, lower(?))
     ORDER BY
       (CASE WHEN product_name_lower = lower(?) THEN 0 ELSE 1 END) ASC,
+      source_priority ASC,
+      completeness DESC,
       scans_n DESC
     LIMIT ?
   `;

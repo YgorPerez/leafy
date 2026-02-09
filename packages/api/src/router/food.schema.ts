@@ -194,6 +194,7 @@ export const FoodSearchOutputSchema = z.array(FoodSearchSchema);
 /** Input schema for logging foods */
 export const LogFoodInputSchema = z.object({
   date: z.string(),
+  loggedAt: z.union([z.string(), z.number(), z.date()]).optional(), // ISO string or timestamp
   foodName: z.string(),
   foodBrand: NullableString,
   foodCode: z.string().optional(),
@@ -242,6 +243,7 @@ export const FoundationFoodNutrientSchema = z.object({
   min: z.number().optional().nullable(),
   median: z.number().optional().nullable(),
   amount: z.number().optional().nullable().default(0),
+  value: z.number().optional().nullable(),
 });
 
 /** USDA measure unit */

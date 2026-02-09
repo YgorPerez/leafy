@@ -12,7 +12,7 @@ test_results.json
 db.sqlite
 db.sqlite-journal
 drizzle/meta/
-
+data/source/Ileal IAA digestibility and DIAAS of world foods_Molly Muleya_November 2021.xlsx
 # food database (DuckDB)
 /data/duckdb/
 food*.db

@@ -202,6 +202,38 @@ export const customFoodRelations = relations(customFood, ({ one }) => ({
   user: one(user, { fields: [customFood.userId], references: [user.id] }),
 }));
 
+export const meal = sqliteTable(
+  "meal",
+  (d) => ({
+    id: d
+      .text({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: d
+      .text({ length: 255 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: d.text({ length: 12 }).notNull(), // YYYY-MM-DD
+    name: d.text({ length: 255 }).notNull(), // "Breakfast", "Meal 1", etc.
+    loggedAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("meal_user_date_idx").on(t.userId, t.date)],
+);
+
+export const mealRelations = relations(meal, ({ one, many }) => ({
+  user: one(user, { fields: [meal.userId], references: [user.id] }),
+  logs: many(dailyLog),
+}));
+
 export const dailyLog = sqliteTable(
   "daily_log",
   (d) => ({
@@ -215,6 +247,13 @@ export const dailyLog = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     date: d.text({ length: 12 }).notNull(), // YYYY-MM-DD
+    mealId: d
+      .text({ length: 255 })
+      .references(() => meal.id, { onDelete: "set null" }), // Optional: could also be cascade
+    loggedAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
     foodCode: d.text({ length: 256 }),
     foodName: d.text({ length: 256 }).notNull(),
     foodBrand: d.text({ length: 256 }),
@@ -232,6 +271,7 @@ export const dailyLog = sqliteTable(
 
 export const dailyLogRelations = relations(dailyLog, ({ one }) => ({
   user: one(user, { fields: [dailyLog.userId], references: [user.id] }),
+  meal: one(meal, { fields: [dailyLog.mealId], references: [meal.id] }),
 }));
 
 export const weightLog = sqliteTable(
