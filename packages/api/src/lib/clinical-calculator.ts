@@ -206,7 +206,130 @@ const AMINO_ACID_GUIDELINES = {
 } as const;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Calculation Logic
+// Onboarding TDEE Calculation
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface OnboardingCalcInput {
+  sex: "male" | "female";
+  age: number;
+  weightKg: number;
+  heightCm: number;
+  bodyFatPercent: number | null;
+  activityLevel: "sedentary" | "low" | "active" | "very_active";
+  goalType: "lose" | "maintain" | "gain";
+  highestWeightKg: number;
+  rateOfChange: number;
+  targetWeightKg: number;
+}
+
+export interface OnboardingCalcResult {
+  bmr: number;
+  bmrFormula: "mifflin_st_jeor" | "katch_mcardle";
+  metabolicAdaptationMultiplier: number;
+  deficitMultiplier: number;
+  adjustedBmr: number;
+  tdee: number;
+  dailyCalorieTarget: number;
+  weeklyDeficitSurplus: number;
+  estimatedWeeksToGoal: number;
+  estimatedGoalDate: string;
+}
+
+export function calculateOnboardingTDEE(
+  input: OnboardingCalcInput,
+): OnboardingCalcResult {
+  const {
+    sex,
+    age,
+    weightKg,
+    heightCm,
+    bodyFatPercent,
+    activityLevel,
+    goalType,
+    highestWeightKg,
+    rateOfChange,
+    targetWeightKg,
+  } = input;
+  const isMale = sex === "male";
+
+  // 1. BMR calculation
+  let bmr: number;
+  let bmrFormula: "mifflin_st_jeor" | "katch_mcardle";
+
+  if (bodyFatPercent != null && bodyFatPercent > 0) {
+    // Katch-McArdle: 370 + 21.6 × LBM(kg)
+    const leanBodyMass = weightKg * (1 - bodyFatPercent / 100);
+    bmr = 370 + 21.6 * leanBodyMass;
+    bmrFormula = "katch_mcardle";
+  } else {
+    // Mifflin-St Jeor
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age;
+    bmr += isMale ? 5 : -161;
+    bmrFormula = "mifflin_st_jeor";
+  }
+
+  // 2. Metabolic adaptation: -3% if current weight < 90% of highest weight
+  let metabolicAdaptationMultiplier = 1.0;
+  if (weightKg < highestWeightKg * 0.9) {
+    metabolicAdaptationMultiplier = 0.97;
+  }
+
+  // 3. Deficit multiplier: -5% if goal is to lose weight
+  let deficitMultiplier = 1.0;
+  if (goalType === "lose") {
+    deficitMultiplier = 0.95;
+  }
+
+  // 4. Adjusted BMR
+  const adjustedBmr = bmr * metabolicAdaptationMultiplier * deficitMultiplier;
+
+  // 5. TDEE
+  const pal = ACTIVITY_FACTORS[activityLevel] ?? 1.2;
+  const tdee = Math.round(adjustedBmr * pal);
+
+  // 6. Daily calorie target
+  // Rate is % body weight per week; 1 kg ≈ 7700 kcal
+  const weeklyWeightChangeKg = weightKg * (rateOfChange / 100);
+  const weeklyCalorieDelta = weeklyWeightChangeKg * 7700;
+  const dailyCalorieDelta = weeklyCalorieDelta / 7;
+
+  let dailyCalorieTarget: number;
+  if (goalType === "lose") {
+    dailyCalorieTarget = Math.round(tdee - dailyCalorieDelta);
+  } else if (goalType === "gain") {
+    dailyCalorieTarget = Math.round(tdee + dailyCalorieDelta);
+  } else {
+    dailyCalorieTarget = tdee;
+  }
+
+  // 7. Estimated weeks to goal
+  const weightDiff = Math.abs(targetWeightKg - weightKg);
+  const weeksToGoal =
+    weeklyWeightChangeKg > 0
+      ? Math.ceil(weightDiff / weeklyWeightChangeKg)
+      : 0;
+
+  const goalDate = new Date();
+  goalDate.setDate(goalDate.getDate() + weeksToGoal * 7);
+
+  return {
+    bmr: Math.round(bmr),
+    bmrFormula,
+    metabolicAdaptationMultiplier,
+    deficitMultiplier,
+    adjustedBmr: Math.round(adjustedBmr),
+    tdee,
+    dailyCalorieTarget,
+    weeklyDeficitSurplus: Math.round(
+      goalType === "lose" ? -weeklyCalorieDelta : weeklyCalorieDelta,
+    ),
+    estimatedWeeksToGoal: weeksToGoal,
+    estimatedGoalDate: goalDate.toISOString().split("T")[0]!,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DRI Calculation Logic
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

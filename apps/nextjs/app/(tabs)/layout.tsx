@@ -31,6 +31,10 @@ export default async function TabsLayout({
 		where: eq(user.id, session.user.id),
 	});
 
+	if (!dbUser?.onboardedAt) {
+		redirect("/onboarding");
+	}
+
 	if (
 		dbUser?.sex &&
 		dbUser?.weight &&

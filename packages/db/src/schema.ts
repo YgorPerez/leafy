@@ -33,7 +33,42 @@ export const user = sqliteTable("user", (d) => ({
   dashboardConfig: d
     .text({ mode: "json" })
     .$type<{ widgets: { id: string; order: number }[] }>(),
+  // Onboarding
+  onboardingProfile: d
+    .text({ mode: "json" })
+    .$type<OnboardingProfile>(),
+  onboardedAt: d.integer({ mode: "timestamp" }),
 }));
+
+export interface OnboardingProfile {
+  unitSystem: "metric" | "imperial";
+  bodyFatPercent?: number;
+  goalType: "lose" | "maintain" | "gain";
+  targetWeight: number;
+  rateOfChange: number;
+  intakeKnowledge: "none" | "rough" | "precise";
+  weightTrend: "losing" | "stable" | "gaining";
+  highestWeight: number;
+  menstrualTracking: boolean;
+  sleepQuality: "poor" | "fair" | "good" | "excellent";
+  trainingExperience: "beginner" | "intermediate" | "advanced";
+  creatineUse: boolean;
+  exerciseFrequency: number;
+  dietType: "standard" | "vegetarian" | "vegan" | "keto" | "paleo";
+  proteinTarget: number;
+  macroDistribution: {
+    carbPercent: number;
+    proteinPercent: number;
+    fatPercent: number;
+  };
+  calorieShifting: {
+    type: "uniform" | "manual" | "training_based";
+    dayConfig?: Record<string, "high" | "low" | "normal">;
+    highDayPercent?: number;
+    lowDayPercent?: number;
+  };
+  checkInDay: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+}
 
 export const userRelations = relations(user, ({ many }) => ({
   account: many(account),

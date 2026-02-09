@@ -31,12 +31,12 @@ export function AuthForm() {
 			{
 				email,
 				password,
-				callbackURL: "/dashboard",
+				callbackURL: "/",
 			},
 			{
 				onSuccess: () => {
 					toast.success("Signed in successfully");
-					window.location.href = "/dashboard";
+					window.location.href = "/";
 				},
 				onError: (ctx) => {
 					toast.error(ctx.error.message);
@@ -57,12 +57,12 @@ export function AuthForm() {
 				email,
 				password,
 				name,
-				callbackURL: "/dashboard",
+				callbackURL: "/",
 			},
 			{
 				onSuccess: () => {
 					toast.success("Account created successfully");
-					window.location.href = "/dashboard";
+					window.location.href = "/";
 				},
 				onError: (ctx) => {
 					toast.error(ctx.error.message);
@@ -77,7 +77,7 @@ export function AuthForm() {
 		await authClient.signIn.social(
 			{
 				provider,
-				callbackURL: "/dashboard",
+				callbackURL: "/",
 			},
 			{
 				onSuccess: () => {

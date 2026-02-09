@@ -1,7 +1,5 @@
-- [ ] [Menus and sections](docs/features/menus-and-sections.md)
 - [ ] [UI Revamp](docs/features/ui-revamp.md)
 - [ ] [Onboarding flow](docs/features/onboarding-flow.md)
-- [ ] [Widgets dashboard](docs/features/widgets-dashboard.md)
 - [ ] [Day management](docs/features/day-management.md)
 - [ ] [Meal grouping and DIASS](docs/features/meal-grouping.md)
 - [ ] Add food suggestions for each nutrient

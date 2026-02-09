@@ -1,3 +1,4 @@
+export { completeOnboarding } from "./completeOnboarding";
 export { deleteLog } from "./deleteLog";
 export { getById } from "./getById";
 export { getDailyLogs } from "./getDailyLogs";

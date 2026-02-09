@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "../trpc";
 import {
+  completeOnboarding,
   deleteLog,
   getById,
   getDailyLogs,
@@ -21,6 +22,7 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const foodRouter = createTRPCRouter({
+  completeOnboarding,
   search,
   getById,
   logFoods,
