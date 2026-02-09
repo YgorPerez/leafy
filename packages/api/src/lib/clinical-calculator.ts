@@ -39,10 +39,10 @@ export type NutrientValue = z.infer<typeof NutrientValueSchema>;
 /**
  * Simplified nutrient value reference for UI editing
  */
-export type NutrientValueRef = {
+export interface NutrientValueRef {
   recommended: number;
   unit: string;
-};
+}
 
 export const DRIMetricsSchema = z.object({
   bmr: z.number(),

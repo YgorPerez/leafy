@@ -6,10 +6,10 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const nextConfig = {
-  serverExternalPackages: [
-    "@duckdb/node-api",
-    "@duckdb/node-bindings",
-    "@libsql/client",
-  ],
+	serverExternalPackages: [
+		"@duckdb/node-api",
+		"@duckdb/node-bindings",
+		"@libsql/client",
+	],
 };
 export default nextConfig;

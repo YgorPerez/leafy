@@ -1,6 +1,7 @@
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { FlashList, FlashListProps } from "@shopify/flash-list";
+import type { FlashListProps } from "@shopify/flash-list";
+import { FlashList } from "@shopify/flash-list";
 
 /**
  * Props for the AppList component.

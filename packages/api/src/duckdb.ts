@@ -35,11 +35,11 @@ export const DUCKDB_PATH = path.join(
 // ─────────────────────────────────────────────────────────────────────────────
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var __duckdb_instance__: DuckDBInstance | undefined;
-  // eslint-disable-next-line no-var
+   
   var __duckdb_connection__: DuckDBConnection | undefined;
-  // eslint-disable-next-line no-var
+   
   var __duckdb_initialized__: boolean | undefined;
 }
 

@@ -32,7 +32,7 @@ export const user = sqliteTable("user", (d) => ({
     .$type<Record<string, { target?: number; min?: number; max?: number }>>(), // Custom nutrient goals
   dashboardConfig: d
     .text({ mode: "json" })
-    .$type<{ widgets: Array<{ id: string; order: number }> }>(),
+    .$type<{ widgets: { id: string; order: number }[] }>(),
 }));
 
 export const userRelations = relations(user, ({ many }) => ({

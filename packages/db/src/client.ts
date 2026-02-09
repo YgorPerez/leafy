@@ -1,8 +1,11 @@
 import type { Client } from "@libsql/client";
+import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 
 import * as schema from "./schema";
+
+type DbInstance = LibSQLDatabase<typeof schema>;
 
 /**
  * Cache the database connection in development. This avoids creating a new connection on every HMR
@@ -10,7 +13,7 @@ import * as schema from "./schema";
  */
 const globalForDb = globalThis as unknown as {
   client: Client | undefined;
-  db: ReturnType<typeof drizzle> | undefined;
+  db: DbInstance | undefined;
 };
 
 if (!process.env.DATABASE_URL) {
@@ -21,6 +24,6 @@ export const client =
   globalForDb.client ?? createClient({ url: process.env.DATABASE_URL });
 globalForDb.client = client;
 
-export const db =
+export const db: DbInstance =
   globalForDb.db ?? drizzle(client, { schema, casing: "snake_case" });
 globalForDb.db = db;

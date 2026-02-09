@@ -44,7 +44,7 @@ export const updateLog = publicProcedure
       updatedNutrients = Object.fromEntries(
         Object.entries(existingLog.nutrients).map(([key, value]) => [
           key,
-          value * scalingFactor,
+          (value) * scalingFactor,
         ]),
       );
     }

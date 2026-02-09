@@ -4,7 +4,7 @@ import { z } from "zod";
 import { dailyLog } from "@acme/db/schema";
 
 import { publicProcedure } from "../../trpc";
-import { type NutrientTotals } from "../food.schema";
+import type {NutrientTotals} from "../food.schema";
 
 /**
  * Get aggregated nutrition totals for a specific date.
