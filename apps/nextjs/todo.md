@@ -15,7 +15,6 @@
 - [ ] **Repeat Items & Scheduler**: Automate logging for recurring items (e.g., daily coffee).
 - [ ] **Copy Meals**: Quickly duplicate meals from previous days ("Copy Yesterday's Breakfast").
 - [ ] **Photos in Diary**: Attach photos to specific diary entries for visual tracking.
-- [ ] **Timestamped Entries**: Record specific times for food entries to track meal timing and eating windows.
 - [ ] **Offline Mode**: Enable full logging capabilities without internet access, syncing when back online.
 
 ## Advanced Nutrition & Analytics
