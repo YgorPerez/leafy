@@ -1,9 +1,11 @@
 import { authRouter } from "./router/auth";
+import { dayRouter } from "./router/day";
 import { foodRouter } from "./router/food";
 import { createCallerFactory, createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
+  day: dayRouter,
   food: foodRouter,
 });
 

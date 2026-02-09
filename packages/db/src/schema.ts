@@ -88,6 +88,7 @@ export const userRelations = relations(user, ({ many }) => ({
   customFoods: many(customFood),
   dailyLogs: many(dailyLog),
   weightLogs: many(weightLog),
+  days: many(day),
 }));
 
 export const account = sqliteTable(
@@ -257,4 +258,32 @@ export const weightLog = sqliteTable(
 
 export const weightLogRelations = relations(weightLog, ({ one }) => ({
   user: one(user, { fields: [weightLog.userId], references: [user.id] }),
+}));
+
+export const day = sqliteTable(
+  "day",
+  (d) => ({
+    id: d
+      .text({ length: 255 })
+      .notNull()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: d
+      .text({ length: 255 })
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: d.text({ length: 12 }).notNull(), // YYYY-MM-DD
+    status: d.text({ length: 20 }).default("active"), // 'active' | 'completed'
+    isFavorite: d.integer({ mode: "boolean" }).default(false),
+    createdAt: d
+      .integer({ mode: "timestamp" })
+      .default(sql`(unixepoch())`)
+      .notNull(),
+    updatedAt: d.integer({ mode: "timestamp" }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index("day_user_date_idx").on(t.userId, t.date)],
+);
+
+export const dayRelations = relations(day, ({ one }) => ({
+  user: one(user, { fields: [day.userId], references: [user.id] }),
 }));
