@@ -34,9 +34,7 @@ export const user = sqliteTable("user", (d) => ({
     .text({ mode: "json" })
     .$type<{ widgets: { id: string; order: number }[] }>(),
   // Onboarding
-  onboardingProfile: d
-    .text({ mode: "json" })
-    .$type<OnboardingProfile>(),
+  onboardingProfile: d.text({ mode: "json" }).$type<OnboardingProfile>(),
   onboardedAt: d.integer({ mode: "timestamp" }),
 }));
 
@@ -52,9 +50,15 @@ export interface OnboardingProfile {
   menstrualTracking: boolean;
   sleepQuality: "poor" | "fair" | "good" | "excellent";
   trainingExperience: "beginner" | "intermediate" | "advanced";
-  creatineUse: boolean;
+
   exerciseFrequency: number;
-  dietType: "standard" | "vegetarian" | "vegan" | "keto" | "paleo";
+  dietType:
+    | "standard"
+    | "vegetarian"
+    | "vegan"
+    | "keto"
+    | "low_fat"
+    | "low_carb";
   proteinTarget: number;
   macroDistribution: {
     carbPercent: number;
@@ -67,7 +71,14 @@ export interface OnboardingProfile {
     highDayPercent?: number;
     lowDayPercent?: number;
   };
-  checkInDay: "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
+  checkInDay:
+    | "monday"
+    | "tuesday"
+    | "wednesday"
+    | "thursday"
+    | "friday"
+    | "saturday"
+    | "sunday";
 }
 
 export const userRelations = relations(user, ({ many }) => ({

@@ -33,14 +33,20 @@ const OnboardingInputSchema = z.object({
 
   // Training
   trainingExperience: z.enum(["beginner", "intermediate", "advanced"]),
-  creatineUse: z.boolean(),
 
   // Activity
   activityLevel: z.enum(["sedentary", "low", "active", "very_active"]),
   exerciseFrequency: z.number().min(0).max(7),
 
   // Dietary
-  dietType: z.enum(["standard", "vegetarian", "vegan", "keto", "paleo"]),
+  dietType: z.enum([
+    "standard",
+    "vegetarian",
+    "vegan",
+    "keto",
+    "low_fat",
+    "low_carb",
+  ]),
   proteinTarget: z.number().min(0.4).max(4.0),
   macroDistribution: z.object({
     carbPercent: z.number(),
@@ -50,9 +56,7 @@ const OnboardingInputSchema = z.object({
 
   // Calorie shifting
   calorieShiftType: z.enum(["uniform", "manual", "training_based"]),
-  dayConfig: z
-    .record(z.string(), z.enum(["high", "low", "normal"]))
-    .optional(),
+  dayConfig: z.record(z.string(), z.enum(["high", "low", "normal"])).optional(),
   highDayPercent: z.number().optional(),
   lowDayPercent: z.number().optional(),
 
@@ -85,7 +89,7 @@ export const completeOnboarding = protectedProcedure
       menstrualTracking: input.menstrualTracking,
       sleepQuality: input.sleepQuality,
       trainingExperience: input.trainingExperience,
-      creatineUse: input.creatineUse,
+
       exerciseFrequency: input.exerciseFrequency,
       dietType: input.dietType,
       proteinTarget: input.proteinTarget,
@@ -102,7 +106,7 @@ export const completeOnboarding = protectedProcedure
     await ctx.db
       .update(user)
       .set({
-        name: input.displayName || undefined,
+        name: input.displayName ?? undefined,
         sex: input.sex,
         birthDate: input.birthDate,
         height: input.heightCm,
@@ -114,7 +118,7 @@ export const completeOnboarding = protectedProcedure
       .where(eq(user.id, userId));
 
     // Create initial weight log entry
-    const today = new Date().toISOString().split("T")[0]!;
+    const today = new Date().toISOString().slice(0, 10);
     await ctx.db.insert(weightLog).values({
       userId,
       date: today,
