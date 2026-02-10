@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
-import { Droplets, PieChart, TrendingUp } from "lucide-react";
+import { Droplets, PieChart, TrendingUp, Wine } from "lucide-react";
 import type { ComponentType } from "react";
+import { BACWidget } from "./bac-widget";
 import { HydrationWidget } from "./hydration-widget";
 import { MacroSummaryWidget } from "./macro-summary-widget";
 import { WeightTrendWidget } from "./weight-trend-widget";
@@ -34,6 +35,13 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
 		description: "30-day weight history sparkline",
 		icon: TrendingUp,
 		component: WeightTrendWidget,
+	},
+	"bac-estimate": {
+		id: "bac-estimate",
+		name: "BAC Estimate",
+		description: "Estimated Blood Alcohol Content based on logged intake",
+		icon: Wine,
+		component: BACWidget,
 	},
 };
 

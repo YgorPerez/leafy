@@ -454,6 +454,21 @@ export const NUTRIENT_REGISTRY = {
     category: "macro",
   },
 
+  // --- ALCOHOL (ETHANOL) ---
+  alcohol: {
+    label: "Alcohol (Ethanol)",
+    unit: "g",
+    clinicalPath: "nutrients.alcohol",
+    aliases: [
+      "alcohol",
+      "ethanol",
+      "Alcohol, ethyl",
+      "alcohol_100g",
+      "Alcohol, ethanol",
+    ],
+    category: "macro",
+  },
+
   // --- VITAMINS ---
   vitamin_a: {
     label: "Vitamin A",
@@ -735,6 +750,11 @@ export function normalizeToCanonicalKey(
     !lowerName.includes("trans")
   )
     return "fat";
+  if (
+    lowerName.includes("ethanol") ||
+    (lowerName.includes("alcohol") && !lowerName.includes("sugar"))
+  )
+    return "alcohol";
   if (
     lowerName.includes("sugar") &&
     !lowerName.includes("added") &&

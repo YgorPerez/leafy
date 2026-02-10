@@ -16,3 +16,4 @@ export * from "./router/food.schema";
 // Pure utility functions and constants
 export * from "./lib/clinical-calculator";
 export * from "./lib/nutrients/registry";
+export * from "./lib/bac";

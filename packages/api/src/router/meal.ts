@@ -66,9 +66,10 @@ export const mealRouter = createTRPCRouter({
             acc.protein += logNutrients.protein ?? 0;
             acc.carbs += logNutrients.carbohydrate ?? 0;
             acc.fat += logNutrients.fat ?? 0;
+            acc.alcohol += logNutrients.alcohol ?? 0;
             return acc;
           },
-          { calories: 0, protein: 0, carbs: 0, fat: 0 },
+          { calories: 0, protein: 0, carbs: 0, fat: 0, alcohol: 0 },
         );
 
         return {

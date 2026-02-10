@@ -187,13 +187,15 @@ export function extractNutrientValues(
     result.fat !== undefined ||
     result.carbohydrate !== undefined ||
     result.sugar !== undefined ||
-    result.starch !== undefined;
+    result.starch !== undefined ||
+    result.alcohol !== undefined;
 
   if (hasMacros) {
     const p = result.protein ?? 0;
     const f = result.fat ?? 0;
     const c = result.carbohydrate ?? (result.starch ?? 0) + (result.sugar ?? 0);
-    const calculated = p * 4 + c * 4 + f * 9;
+    const a = result.alcohol ?? 0;
+    const calculated = p * 4 + c * 4 + f * 9 + a * 7;
     result.energy = Number(calculated.toFixed(2));
   }
 

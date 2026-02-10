@@ -73,6 +73,9 @@ export function MealCard({
                 {formatMacro(meal.nutrients.protein)}p •{" "}
                 {formatMacro(meal.nutrients.carbs)}c •{" "}
                 {formatMacro(meal.nutrients.fat)}f
+                {meal.nutrients.alcohol > 0 && (
+                  <> • {formatMacro(meal.nutrients.alcohol)}a</>
+                )}
               </span>
             </div>
           </div>

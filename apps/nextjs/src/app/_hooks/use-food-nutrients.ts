@@ -13,6 +13,7 @@ export const MACRO_COLORS = {
   protein: "#ef4444", // red-500
   carbs: "#eab308", // yellow-500
   fat: "#22c55e", // green-500
+  alcohol: "#8b5cf6", // violet-500
 };
 
 export function useFoodNutrients(
@@ -64,13 +65,15 @@ export function useFoodNutrients(
     const protein = findValue("protein");
     const carbs = findValue("carbohydrate");
     const fat = findValue("fat");
+    const alcohol = findValue("alcohol");
 
-    if (protein === 0 && carbs === 0 && fat === 0) return [];
+    if (protein === 0 && carbs === 0 && fat === 0 && alcohol === 0) return [];
 
     return [
       { name: "Protein", value: protein, color: MACRO_COLORS.protein },
       { name: "Carbs", value: carbs, color: MACRO_COLORS.carbs },
       { name: "Fat", value: fat, color: MACRO_COLORS.fat },
+      { name: "Alcohol", value: alcohol, color: MACRO_COLORS.alcohol },
     ].filter((d) => d.value > 0);
   }, [nutrients]);
 

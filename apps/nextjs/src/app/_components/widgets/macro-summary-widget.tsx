@@ -12,6 +12,7 @@ const COLORS = {
 	protein: "#3b82f6",
 	carbs: "#f59e0b",
 	fat: "#ef4444",
+	alcohol: "#a855f7",
 };
 
 export function MacroSummaryWidget({ date }: { date: Date }) {
@@ -24,6 +25,7 @@ export function MacroSummaryWidget({ date }: { date: Date }) {
 	const protein = getIntake(intake, "protein");
 	const carbs = getIntake(intake, "carbohydrate");
 	const fat = getIntake(intake, "fat");
+	const alcohol = getIntake(intake, "alcohol");
 
 	const proteinTarget =
 		customGoals?.protein?.target ??
@@ -37,13 +39,18 @@ export function MacroSummaryWidget({ date }: { date: Date }) {
 		customGoals?.fat?.target ??
 		metrics?.nutrients?.fat?.total?.recommended ??
 		0;
+	const alcoholMax =
+		customGoals?.alcohol?.target ??
+		metrics?.nutrients?.alcohol?.max ??
+		0;
 
-	const totalCals = protein * 4 + carbs * 4 + fat * 9;
+	const totalCals = protein * 4 + carbs * 4 + fat * 9 + alcohol * 7;
 
 	const pieData = [
 		{ name: "Protein", value: protein * 4 || 0.1 },
 		{ name: "Carbs", value: carbs * 4 || 0.1 },
 		{ name: "Fat", value: fat * 9 || 0.1 },
+		...(alcohol > 0 ? [{ name: "Alcohol", value: alcohol * 7 }] : []),
 	];
 
 	const macros = [
@@ -68,6 +75,17 @@ export function MacroSummaryWidget({ date }: { date: Date }) {
 			unit: "g",
 			color: COLORS.fat,
 		},
+		...(alcohol > 0
+			? [
+					{
+						label: "Alcohol",
+						value: alcohol,
+						target: alcoholMax,
+						unit: "g",
+						color: COLORS.alcohol,
+					},
+				]
+			: []),
 	];
 
 	return (
@@ -96,9 +114,12 @@ export function MacroSummaryWidget({ date }: { date: Date }) {
 									dataKey="value"
 									strokeWidth={0}
 								>
-									<Cell fill={COLORS.protein} />
-									<Cell fill={COLORS.carbs} />
-									<Cell fill={COLORS.fat} />
+									{pieData.map((entry) => (
+										<Cell
+											key={entry.name}
+											fill={COLORS[entry.name.toLowerCase() as keyof typeof COLORS]}
+										/>
+									))}
 								</Pie>
 							</PieChart>
 						</ResponsiveContainer>

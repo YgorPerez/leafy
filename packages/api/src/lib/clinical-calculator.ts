@@ -109,6 +109,7 @@ export const DRIMetricsSchema = z.object({
       cholesterol: NutrientValueSchema,
     }),
     water: NutrientValueSchema,
+    alcohol: NutrientValueSchema,
 
     // Vitamins
     vitaminA: NutrientValueSchema,
@@ -507,6 +508,12 @@ export function calculateDRI(profile: UserProfile): DRIMetrics {
         },
       },
       water: { recommended: water, unit: "ml" },
+      alcohol: {
+        recommended: 0,
+        unit: "g",
+        max: isMale ? 28 : 14,
+        note: "If consumed, limit to 1 drink/day (women) or 2/day (men). 14g = 1 standard drink.",
+      },
 
       // Vitamins
       vitaminA: { recommended: isMale ? 900 : 700, unit: "mcg", ul: 3000 },

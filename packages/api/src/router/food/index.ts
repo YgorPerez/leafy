@@ -1,5 +1,6 @@
 export { completeOnboarding } from "./completeOnboarding";
 export { deleteLog } from "./deleteLog";
+export { getBAC } from "./getBAC";
 export { getById } from "./getById";
 export { getDailyLogs } from "./getDailyLogs";
 export { getDailyNutrition } from "./getDailyNutrition";
