@@ -17,6 +17,7 @@ interface LogEntry {
   foodBrand: string | null;
   quantity: number;
   unit: string;
+  loggedAt: Date | string | null;
   nutrients: Record<string, number> | null;
 }
 
@@ -101,6 +102,7 @@ export function LoggedFoods({ date }: { date: Date }) {
                   foodBrand: log.foodBrand,
                   quantity: log.quantity,
                   unit: log.unit,
+                  loggedAt: log.loggedAt,
                   nutrients: (log.nutrients as Record<string, number>) ?? null,
                 })
               }

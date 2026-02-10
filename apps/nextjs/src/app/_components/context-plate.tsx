@@ -121,8 +121,11 @@ export function ContextPlate({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="g">g</SelectItem>
-                    <SelectItem value="serving">serving</SelectItem>
                     <SelectItem value="oz">oz</SelectItem>
+                    <SelectItem value="ml">ml</SelectItem>
+                    <SelectItem value="cup">cup</SelectItem>
+                    <SelectItem value="tbsp">tbsp</SelectItem>
+                    <SelectItem value="tsp">tsp</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

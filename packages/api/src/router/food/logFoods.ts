@@ -1,3 +1,4 @@
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { dailyLog, meal } from "@acme/db/schema";
@@ -40,9 +41,6 @@ export const logFoods = protectedProcedure
     const userId = ctx.session.user.id;
     const connection = await getDuckDBConnection();
 
-    // Grouping Logic
-    // We'll rely on the first item's loggedAt to determine the meal for the batch if they are consistent.
-    // For now, we process all inputs in one batch, assuming they are logged together
     const firstItem = input[0];
     if (!firstItem) return { success: true, count: 0 };
 
@@ -50,19 +48,45 @@ export const logFoods = protectedProcedure
       ? new Date(firstItem.loggedAt)
       : new Date();
 
-    const mealResult = await ctx.db
-      .insert(meal)
-      .values({
-        userId,
-        date: firstItem.date,
-        name: "Logged Meal", // Required field in schema
-        loggedAt: firstLoggedAt, // Drizzle expects Date for integer mode: timestamp
-      })
-      .returning({ id: meal.id });
+    // Try to find an existing meal within a 5-minute window to group with
+    const GROUPING_WINDOW_SEC = 5 * 60;
+    const loggedAtEpoch = Math.floor(firstLoggedAt.getTime() / 1000);
+    const windowStartEpoch = loggedAtEpoch - GROUPING_WINDOW_SEC;
+    const windowEndEpoch = loggedAtEpoch + GROUPING_WINDOW_SEC;
 
-    const mealId = mealResult[0]?.id;
-    if (!mealId) {
-      throw new Error("Failed to create meal record");
+    const existingMeals = await ctx.db
+      .select({ id: meal.id })
+      .from(meal)
+      .where(
+        and(
+          eq(meal.userId, userId),
+          eq(meal.date, firstItem.date),
+          sql`${meal.loggedAt} >= ${windowStartEpoch}`,
+          sql`${meal.loggedAt} <= ${windowEndEpoch}`,
+        ),
+      )
+      .limit(1);
+
+    let mealId: string;
+
+    if (existingMeals[0]) {
+      mealId = existingMeals[0].id;
+    } else {
+      const mealResult = await ctx.db
+        .insert(meal)
+        .values({
+          userId,
+          date: firstItem.date,
+          name: "Logged Meal",
+          loggedAt: firstLoggedAt,
+        })
+        .returning({ id: meal.id });
+
+      const newMealId = mealResult[0]?.id;
+      if (!newMealId) {
+        throw new Error("Failed to create meal record");
+      }
+      mealId = newMealId;
     }
 
     const logPromises = input.map(async (item) => {

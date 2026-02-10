@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 import { toast } from "sonner";
 
 import type { CanonicalNutrientKey } from "@acme/api/client";
@@ -42,6 +43,7 @@ interface LogEntry {
   foodBrand: string | null;
   quantity: number;
   unit: string;
+  loggedAt: Date | string | null;
   nutrients: Record<string, number> | null;
 }
 
@@ -58,6 +60,7 @@ export function LogDetailsDialog({
 }: LogDetailsDialogProps) {
   const [quantity, setQuantity] = useState<number>(100);
   const [unit, setUnit] = useState<string>("g");
+  const [loggedAtTime, setLoggedAtTime] = useState<string>("");
   const { metrics, customGoals } = useUser();
   const utils = api.useUtils();
 
@@ -78,6 +81,9 @@ export function LogDetailsDialog({
     if (log) {
       setQuantity(log.quantity);
       setUnit(log.unit);
+      if (log.loggedAt) {
+        setLoggedAtTime(format(new Date(log.loggedAt), "HH:mm"));
+      }
     }
   }, [log]);
 
@@ -132,14 +138,26 @@ export function LogDetailsDialog({
   const handleSave = () => {
     if (!log) return;
 
-    updateMutation.mutate({
+    const updates: { id: string; quantity: number; unit: string; loggedAt?: string } = {
       id: log.id,
       quantity,
       unit,
-    });
+    };
+
+    // If time changed, build a new Date from the original date + new time
+    const originalTime = log.loggedAt ? format(new Date(log.loggedAt), "HH:mm") : "";
+    if (loggedAtTime && loggedAtTime !== originalTime && log.loggedAt) {
+      const base = new Date(log.loggedAt);
+      const [hours, minutes] = loggedAtTime.split(":").map(Number);
+      base.setHours(hours!, minutes!, 0, 0);
+      updates.loggedAt = base.toISOString();
+    }
+
+    updateMutation.mutate(updates);
   };
 
-  const hasChanges = log && (quantity !== log.quantity || unit !== log.unit);
+  const originalTime = log?.loggedAt ? format(new Date(log.loggedAt), "HH:mm") : "";
+  const hasChanges = log && (quantity !== log.quantity || unit !== log.unit || loggedAtTime !== originalTime);
 
   return (
     <Dialog onOpenChange={(open) => !open && onClose()} open={isOpen}>
@@ -162,7 +180,7 @@ export function LogDetailsDialog({
             </div>
 
             {log && (
-              <div className="bg-secondary/30 flex items-center gap-2 self-start rounded-lg p-2 sm:self-auto">
+              <div className="bg-secondary/30 flex items-center gap-4 self-start rounded-lg p-2 sm:self-auto">
                 <div className="flex flex-col gap-1">
                   <span className="text-muted-foreground px-1 text-[10px] font-bold uppercase">
                     Serving Size
@@ -188,6 +206,17 @@ export function LogDetailsDialog({
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-muted-foreground px-1 text-[10px] font-bold uppercase">
+                    Time
+                  </span>
+                  <Input
+                    className="border-primary/40 bg-background focus-visible:ring-primary h-8 w-24 font-bold"
+                    onChange={(e) => setLoggedAtTime(e.target.value)}
+                    type="time"
+                    value={loggedAtTime}
+                  />
                 </div>
               </div>
             )}

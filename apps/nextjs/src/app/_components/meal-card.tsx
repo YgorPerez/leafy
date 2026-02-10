@@ -1,14 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { format } from "date-fns";
-import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
 import { cn } from "~/lib/utils";
-import { type RouterOutputs } from "~/trpc/react";
+import { api, type RouterOutputs } from "~/trpc/react";
 
 type Meal = RouterOutputs["meal"]["getDailyMeals"][number];
 
@@ -26,6 +28,56 @@ export function MealCard({
   onLogClick,
 }: MealCardProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(meal.name);
+  const [editTime, setEditTime] = useState(
+    meal.loggedAt ? format(new Date(meal.loggedAt), "HH:mm") : "",
+  );
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const utils = api.useUtils();
+
+  const updateMealMutation = api.meal.update.useMutation({
+    onSuccess: () => {
+      toast.success("Meal updated");
+      setIsEditing(false);
+      void utils.meal.getDailyMeals.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update meal");
+    },
+  });
+
+  const handleSaveMeal = () => {
+    const updates: { id: string; name?: string; loggedAt?: string } = {
+      id: meal.id,
+    };
+
+    if (editName !== meal.name) {
+      updates.name = editName;
+    }
+
+    const originalTime = meal.loggedAt
+      ? format(new Date(meal.loggedAt), "HH:mm")
+      : "";
+    if (editTime !== originalTime && meal.loggedAt) {
+      const base = new Date(meal.loggedAt);
+      const [hours, minutes] = editTime.split(":").map(Number);
+      base.setHours(hours!, minutes!, 0, 0);
+      updates.loggedAt = base.toISOString();
+    }
+
+    updateMealMutation.mutate(updates);
+  };
+
+  const handleStartEditing = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditing(true);
+    setEditName(meal.name);
+    setEditTime(
+      meal.loggedAt ? format(new Date(meal.loggedAt), "HH:mm") : "",
+    );
+    setTimeout(() => nameInputRef.current?.focus(), 0);
+  };
 
   // Helper to format macros
   const formatMacro = (val: number) => Math.round(val);
@@ -52,14 +104,71 @@ export function MealCard({
               <ChevronDown className="h-4 w-4" />
             )}
           </div>
-          <div>
-            <h3 className="text-lg leading-none font-bold">{meal.name}</h3>
-            <p className="text-muted-foreground text-xs">
-              {meal.loggedAt
-                ? format(new Date(meal.loggedAt), "h:mm a")
-                : "Time unknown"}
-            </p>
-          </div>
+          {isEditing && meal.id !== "ungrouped" ? (
+            <div
+              className="flex items-center gap-2"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Input
+                ref={nameInputRef}
+                className="border-primary/40 bg-background h-8 w-36 text-sm font-bold"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveMeal();
+                  if (e.key === "Escape") setIsEditing(false);
+                }}
+              />
+              <Input
+                className="border-primary/40 bg-background h-8 w-24 text-sm"
+                type="time"
+                value={editTime}
+                onChange={(e) => setEditTime(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSaveMeal();
+                  if (e.key === "Escape") setIsEditing(false);
+                }}
+              />
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 text-xs"
+                onClick={handleSaveMeal}
+                disabled={updateMealMutation.isPending}
+              >
+                Save
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 text-xs"
+                onClick={() => setIsEditing(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div>
+                <h3 className="text-lg leading-none font-bold">{meal.name}</h3>
+                <p className="text-muted-foreground text-xs">
+                  {meal.loggedAt
+                    ? format(new Date(meal.loggedAt), "h:mm a")
+                    : "Time unknown"}
+                </p>
+              </div>
+              {meal.id !== "ungrouped" && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-primary h-7 w-7"
+                  onClick={handleStartEditing}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">
