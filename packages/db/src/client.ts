@@ -20,8 +20,14 @@ if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
 }
 
-export const client =
-  globalForDb.client ?? createClient({ url: process.env.DATABASE_URL });
+const initClient = () => {
+  const c = createClient({ url: process.env.DATABASE_URL! });
+  // Enable WAL mode for concurrent read/write support and avoid SQLITE_BUSY
+  void c.execute("PRAGMA journal_mode=WAL;");
+  return c;
+};
+
+export const client = globalForDb.client ?? initClient();
 globalForDb.client = client;
 
 export const db: DbInstance =

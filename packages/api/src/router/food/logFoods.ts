@@ -39,7 +39,6 @@ export const logFoods = protectedProcedure
   .input(z.array(LogFoodInputSchema))
   .mutation(async ({ ctx, input }) => {
     const userId = ctx.session.user.id;
-    const connection = await getDuckDBConnection();
 
     const firstItem = input[0];
     if (!firstItem) return { success: true, count: 0 };
@@ -54,90 +53,100 @@ export const logFoods = protectedProcedure
     const windowStartEpoch = loggedAtEpoch - GROUPING_WINDOW_SEC;
     const windowEndEpoch = loggedAtEpoch + GROUPING_WINDOW_SEC;
 
-    const existingMeals = await ctx.db
-      .select({ id: meal.id })
-      .from(meal)
-      .where(
-        and(
-          eq(meal.userId, userId),
-          eq(meal.date, firstItem.date),
-          sql`${meal.loggedAt} >= ${windowStartEpoch}`,
-          sql`${meal.loggedAt} <= ${windowEndEpoch}`,
-        ),
-      )
-      .limit(1);
+    // Resolve all nutrients BEFORE the transaction (DuckDB/foundation are external)
+    const resolvedNutrients = await Promise.all(
+      input.map(async (item) => {
+        let nutrients = item.nutrients;
 
-    let mealId: string;
-
-    if (existingMeals[0]) {
-      mealId = existingMeals[0].id;
-    } else {
-      const mealResult = await ctx.db
-        .insert(meal)
-        .values({
-          userId,
-          date: firstItem.date,
-          name: "Logged Meal",
-          loggedAt: firstLoggedAt,
-        })
-        .returning({ id: meal.id });
-
-      const newMealId = mealResult[0]?.id;
-      if (!newMealId) {
-        throw new Error("Failed to create meal record");
-      }
-      mealId = newMealId;
-    }
-
-    const logPromises = input.map(async (item) => {
-      let nutrients = item.nutrients;
-
-      // If nutrients are not provided, try to fetch them from foundation if applicable
-      const isFoundation =
-        item.dataSource === "foundation" || item.source === "Foundation";
-      if (!nutrients && isFoundation && item.foodCode) {
-        nutrients = await extractFoundationNutrients(
-          Number(item.foodCode),
-          item.quantity,
-          item.unit,
-        );
-      }
-
-      // If still no nutrients, we might need a fallback or query DuckDB for branded foods
-      if (!nutrients && item.foodCode) {
-        try {
-          const sql = buildGetNutrimentsSQL();
-          const reader = await connection.runAndReadAll(sql, [item.foodCode]);
-          const rows = reader.getRowObjects();
-          if (rows.length > 0) {
-            const row = rows[0] as Record<string, unknown>;
-            const rawNutrients = extractNutrientValues(row.nutriments);
-            const scalingFactor = calculateScalingFactor(
-              item.quantity,
-              item.unit,
-            );
-            nutrients = scaleNutrients(rawNutrients, scalingFactor);
-          }
-        } catch (e) {
-          console.error("Failed to fetch nutrients from DuckDB:", e);
+        const isFoundation =
+          item.dataSource === "foundation" || item.source === "Foundation";
+        if (!nutrients && isFoundation && item.foodCode) {
+          nutrients = await extractFoundationNutrients(
+            Number(item.foodCode),
+            item.quantity,
+            item.unit,
+          );
         }
+
+        if (!nutrients && item.foodCode) {
+          try {
+            const connection = await getDuckDBConnection();
+            const nutSql = buildGetNutrimentsSQL();
+            const reader = await connection.runAndReadAll(nutSql, [
+              item.foodCode,
+            ]);
+            const rows = reader.getRowObjects();
+            if (rows.length > 0) {
+              const row = rows[0] as Record<string, unknown>;
+              const rawNutrients = extractNutrientValues(row.nutriments);
+              const scalingFactor = calculateScalingFactor(
+                item.quantity,
+                item.unit,
+              );
+              nutrients = scaleNutrients(rawNutrients, scalingFactor);
+            }
+          } catch (e) {
+            console.error("Failed to fetch nutrients from DuckDB:", e);
+          }
+        }
+
+        return nutrients ?? {};
+      }),
+    );
+
+    // All SQLite writes inside a single transaction for atomicity
+    return await ctx.db.transaction(async (tx) => {
+      const existingMeals = await tx
+        .select({ id: meal.id })
+        .from(meal)
+        .where(
+          and(
+            eq(meal.userId, userId),
+            eq(meal.date, firstItem.date),
+            sql`${meal.loggedAt} >= ${windowStartEpoch}`,
+            sql`${meal.loggedAt} <= ${windowEndEpoch}`,
+          ),
+        )
+        .limit(1);
+
+      let mealId: string;
+
+      if (existingMeals[0]) {
+        mealId = existingMeals[0].id;
+      } else {
+        const mealResult = await tx
+          .insert(meal)
+          .values({
+            userId,
+            date: firstItem.date,
+            name: "Logged Meal",
+            loggedAt: firstLoggedAt,
+          })
+          .returning({ id: meal.id });
+
+        const newMealId = mealResult[0]?.id;
+        if (!newMealId) {
+          throw new Error("Failed to create meal record");
+        }
+        mealId = newMealId;
       }
 
-      return ctx.db.insert(dailyLog).values({
-        mealId,
-        userId,
-        date: item.date,
-        loggedAt: item.loggedAt ? new Date(item.loggedAt) : firstLoggedAt,
-        foodCode: item.foodCode ?? "unknown",
-        foodName: item.foodName,
-        foodBrand: item.foodBrand,
-        quantity: item.quantity,
-        unit: item.unit,
-        nutrients: nutrients ?? {},
-      });
+      for (let i = 0; i < input.length; i++) {
+        const item = input[i]!;
+        await tx.insert(dailyLog).values({
+          mealId,
+          userId,
+          date: item.date,
+          loggedAt: item.loggedAt ? new Date(item.loggedAt) : firstLoggedAt,
+          foodCode: item.foodCode ?? "unknown",
+          foodName: item.foodName,
+          foodBrand: item.foodBrand,
+          quantity: item.quantity,
+          unit: item.unit,
+          nutrients: resolvedNutrients[i]!,
+        });
+      }
+
+      return { success: true, count: input.length };
     });
-
-    await Promise.all(logPromises);
-
-    return { success: true, count: input.length };
   });

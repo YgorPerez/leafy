@@ -221,10 +221,49 @@ async function initializeTables(connection: DuckDBConnection): Promise<void> {
 
 let currentConnectionPromise: Promise<DuckDBConnection> | null = null;
 
+async function isConnectionAlive(
+  conn: DuckDBConnection,
+): Promise<boolean> {
+  try {
+    await conn.run("SELECT 1");
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function createConnection(): Promise<DuckDBConnection> {
+  console.log(`[duckdb] Initializing database at: ${DUCKDB_PATH}`);
+
+  globalThis.__duckdb_instance__ ??=
+    await DuckDBInstance.create(DUCKDB_PATH);
+
+  const conn = await globalThis.__duckdb_instance__.connect();
+
+  await conn.run(`
+    SET memory_limit = '2GB';
+    SET threads = 4;
+    SET enable_object_cache = true;
+  `);
+
+  await initializeTables(conn);
+
+  globalThis.__duckdb_connection__ = conn;
+  return conn;
+}
+
 export async function getDuckDBConnection(): Promise<DuckDBConnection> {
-  // 1. Return existing connection if available
+  // 1. Check if cached connection is still alive
   if (globalThis.__duckdb_connection__) {
-    return globalThis.__duckdb_connection__;
+    if (await isConnectionAlive(globalThis.__duckdb_connection__)) {
+      return globalThis.__duckdb_connection__;
+    }
+    // Connection is stale (e.g. after HMR), clear and reconnect
+    console.warn("[duckdb] Cached connection is stale, reconnecting...");
+    globalThis.__duckdb_connection__ = undefined;
+    globalThis.__duckdb_instance__ = undefined;
+    globalThis.__duckdb_initialized__ = false;
+    currentConnectionPromise = null;
   }
 
   // 2. Resolve concurrent connection attempts
@@ -232,30 +271,10 @@ export async function getDuckDBConnection(): Promise<DuckDBConnection> {
     return currentConnectionPromise;
   }
 
-  currentConnectionPromise = (async () => {
-    try {
-      console.log(`[duckdb] Initializing database at: ${DUCKDB_PATH}`);
-
-      globalThis.__duckdb_instance__ ??=
-        await DuckDBInstance.create(DUCKDB_PATH);
-
-      const conn = await globalThis.__duckdb_instance__.connect();
-
-      await conn.run(`
-        SET memory_limit = '2GB';
-        SET threads = 4;
-        SET enable_object_cache = true;
-      `);
-
-      await initializeTables(conn);
-
-      globalThis.__duckdb_connection__ = conn;
-      return conn;
-    } catch (e) {
-      currentConnectionPromise = null;
-      throw e;
-    }
-  })();
+  currentConnectionPromise = createConnection().catch((e) => {
+    currentConnectionPromise = null;
+    throw e;
+  });
 
   return currentConnectionPromise;
 }

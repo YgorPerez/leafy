@@ -21,7 +21,7 @@ export function HydrationWidget({ date }: { date: Date }) {
 		onSuccess: () => {
 			void utils.food.getWaterIntake.invalidate({ date: formattedDate });
 			void utils.food.getDailyNutrition.invalidate({ date: formattedDate });
-			void utils.food.getDailyLogs.invalidate();
+			void utils.food.getDailyLogs.invalidate({ date: formattedDate });
 		},
 	});
 
