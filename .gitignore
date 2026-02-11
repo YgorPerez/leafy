@@ -56,3 +56,5 @@ dist/
 
 # Database
 db.sqlite
+db.sqlite-shm
+db.sqlite-wal
