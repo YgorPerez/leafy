@@ -9,7 +9,8 @@
       "Bash(dir /a \"c:\\\\Users\\\\Administrator\\\\Documents\\\\github\\\\leafy-turbo\")",
       "Bash(findstr:*)",
       "Bash(powershell -Command:*)",
-      "Bash(pnpm --filter nextjs build:*)"
+      "Bash(pnpm --filter nextjs build:*)",
+      "Bash(pnpm dev)"
     ]
   }
 }
