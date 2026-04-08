@@ -27,7 +27,7 @@
     "@acme/validators": "workspace:*",
     "@duckdb/node-api": "1.4.4-r.1",
     "@trpc/server": "catalog:",
-    "drizzle-orm": "^0.45.1",
+    "drizzle-orm": "^0.45.2",
     "superjson": "2.2.6",
     "zod": "catalog:"
   },
